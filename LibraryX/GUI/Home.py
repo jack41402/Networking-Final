@@ -13,3 +13,11 @@ class HomePanel(QWidget):
 	def __init__(self):
 		super().__init__()
 		loadUi("UI/home.ui", self)
+
+
+		# connect signal
+		self.Send_Button.clicked.connect(self.post_comment)
+
+
+	# send the comment to server
+	def post_comment()

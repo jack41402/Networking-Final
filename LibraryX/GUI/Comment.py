@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QWidget
 
 
 class CommentPanel(QWidget):
-	def __init__(self):
+	def __init__(self, author, comment):
 		super().__init__()
 		loadUi("UI/comment.ui", self)
+

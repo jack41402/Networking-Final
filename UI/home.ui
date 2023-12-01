@@ -152,8 +152,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>676</width>
-          <height>437</height>
+          <width>679</width>
+          <height>441</height>
          </rect>
         </property>
        </widget>
@@ -168,7 +168,7 @@
         <enum>QLayout::SetMinimumSize</enum>
        </property>
        <item>
-        <widget class="QPushButton" name="btn_Send_6">
+        <widget class="QPushButton" name="EmbedFile_Button">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
            <horstretch>0</horstretch>
@@ -226,7 +226,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btn_Send_7">
+        <widget class="QPushButton" name="Send_Button">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
            <horstretch>0</horstretch>
