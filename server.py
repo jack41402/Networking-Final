@@ -24,7 +24,7 @@ class Server(QThread):
 
     def run(self):
         self.connection()
-        self.registry()
+        self.function_registry()
         self.server.serve_forever()
 
     def connection(self):
@@ -35,19 +35,19 @@ class Server(QThread):
         except Exception as e:
             print(f'[ERROR] Other exception in server.connection: {e}')
 
-    def registry(self):
-        print("[SERVER] Registry...")
+    def function_registry(self):
+        print("[SERVER] Registry functions...")
         self.server.register_function(self.login, "login")
         self.server.register_function(self.register, "register")
-        self.server.register_function(self.create, "create")
         self.server.register_function(self.comment, "comment")
         self.server.register_function(self.delete, "delete")
         self.server.register_function(self.user, "user")
+        print("[SERVER] Function login, register, comment, delete, and user have been registered.")
 
     def login(self, username: str, password: str):
         try:
             with self.lock:
-                user_info = self.database.findInfo("user_information", "username", username)
+                user_info = self.database.find_info("user_information", "username", username)
                 print("[SERVER] User login info: ", user_info)
             if not username:
                 print("[ERROR] USERNAME CAN'T BE EMPTY.")
@@ -70,7 +70,7 @@ class Server(QThread):
     def register(self, username: str, password: str, confirm_password: str):
         try:
             with self.lock:
-                user_info = self.database.findInfo("user_information", "username", username)
+                user_info = self.database.find_info("user_information", "username", username)
                 print("[SERVER] User register info: ", user_info)
             if user_info:
                 print("[ERROR] USERNAME ALREADY EXIST.")
@@ -83,126 +83,63 @@ class Server(QThread):
                 return False
             else:
                 with self.lock:
-                    self.database.insertInfo("user_information", {"username": username, "password": password})
+                    self.database.insert_info("user_information", {"username": username, "password": password})
                 print("[INFO] User %s register successfully." % username)
                 return True
         except Exception as e:
             print(f'[ERROR] Other exception in server.register: {e}')
 
-    def create(self, title: str, content: str, author: str):
-        try:
-            if not title:
-                print("[ERROR] TITLE CAN'T BE EMPTY.")
-                return False
-            elif not content:
-                print("[ERROR] CONTENT CAN'T BE EMPTY.")
-                return False
-            else:
-                self.lock.acquire()
-                author_id = self.database.findInfo("user_information", "username", author)
-                self.lock.release()
-                if len(author_id) != 0:
-                    author_id = author_id[0][0]
-                else:
-                    return False
-                self.lock.acquire()
-                self.database.insertInfo("forum", {"title": title, "content": content, "author_id": author_id})
-                self.lock.release()
-                return True
-        except Exception as e:
-            print(f'[ERROR] Other exception in server.create: {e}')
-
-    def comment(self, author: str, content: str, post_id: int):
+    def comment(self, author: str, content: str, reply_id: int):
         try:
             if not content:
+                print("[ERROR] COMMENT CAN'T BE EMPTY.")
                 return False
-            self.lock.acquire()
-            floor = self.database.findMaxFloor("comment", "post_id", post_id)
-            author_id = self.database.findInfo("user_information", "username", author)
-            self.lock.release()
+            with self.lock:
+                author_id = self.database.find_info("user_information", "username", author)
             if len(author_id) != 0:
                 author_id = author_id[0][0]
             else:
+                print("[ERROR] UNEXPECTED USER %s." % author)
                 return False
-            self.lock.acquire()
-            self.database.insertInfo("comment", {"floor": floor + 1, "content": content, "author_id": author_id, "post_id": post_id})
-            self.lock.release()
+            with self.lock:
+                self.database.insert_info("comment", {"content": content, "author_id": author_id, "reply_id": reply_id})
             return True
         except Exception as e:
             print(f'[ERROR] Other exception in server.comment: {e}')
 
     def delete(self, target: str, target_id: int):
         try:
-            if target == "post":
-                self.lock.acquire()
-                result = self.database.findInfo("comment", "post_id", target_id)
-                if len(result) == 0:
-                    self.database.deleteInfo("forum", "post_id", target_id)
-                    self.lock.release()
-                    return True
-                else:
-                    return False
-            elif target == "comment":
-                self.lock.acquire()
-                result = self.database.findInfo("reply", "comment_id", target_id)
-                if len(result) == 0:
-                    self.database.deleteInfo("comment", "comment_id", target_id)
-                    self.lock.release()
-                    return True
-                else:
-                    return False
-            elif target == "reply":
-                self.lock.acquire()
-                comment_id = self.database.findInfo("reply", "reply_id", target_id)
-                self.lock.release()
-                if len(comment_id) != 0:
-                    comment_id = comment_id[0][5]
-                else:
-                    return False
-                self.lock.acquire()
-                result = self.database.findReplyInfo("reply", "comment_id", comment_id, "reply_id", target_id)
-                self.lock.release()
-                if len(result) == 0:
-                    self.lock.acquire()
-                    self.database.deleteInfo("reply", "reply_id", target_id)
-                    self.lock.release()
-                    return True
-                else:
-                    return False
+            with self.lock:
+                match target:
+                    case "user_information":
+                        result = self.database.find_info("user_information", "user_id", target_id)
+                        if len(result):
+                            self.database.delete_info("user_information", "user_id", target_id)
+                            return True
+                        else:
+                            return False
+                    case "friend":
+                        result = self.database.find_info("friend", "user_id", target_id)
+                        if len(result):
+                            self.database.delete_info("friend", "user_id", target_id)
+                            return True
+                        else:
+                            return False
+                    case "comment":
+                        result = self.database.find_info("comment", "comment_id", target_id)
+                        if len(result):
+                            self.database.delete_info("comment", "comment_id", target_id)
+                            return True
+                        else:
+                            return False
+                    case _:
+                        print("[ERROR] UNEXPECTED DELETE TARGET %s." % target)
+                        return False
         except Exception as e:
             print(f'[ERROR] Other exception in server.delete: {e}')
 
+    def user(self, user_id: int):
+        return self.database.find_info("user_information", "id", user_id)
+
     def close(self):
         pass
-
-    def user(self, user_id: int):
-        return self.database.findInfo("user_information", "id", user_id)
-
-
-class Discuss:
-    def __init__(self, comment, reply):
-        self.comment = Comment(comment)
-        self.reply = []
-        for row in reply:
-            self.reply.append(Reply(row))
-        self.reply = tuple(self.reply)
-
-
-class Comment:
-    def __init__(self, comment):
-        self.comment_id = comment[0]
-        self.floor = comment[1]
-        self.content = comment[2]
-        self.time = comment[3]
-        self.author_id = comment[4]
-        self.post_id = comment[5]
-
-
-class Reply:
-    def __init__(self, reply):
-        self.reply_id = reply[0]
-        self.floor = reply[1]
-        self.content = reply[2]
-        self.time = reply[3]
-        self.author_id = reply[4]
-        self.comment_id = reply[5]
