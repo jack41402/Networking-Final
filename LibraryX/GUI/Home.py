@@ -22,5 +22,5 @@ class HomePanel(QWidget):
 
 	# send the comment to server
 	def post_comment(self):
-		self.logger()
+		self.logger.info("Trying to post the comment to server")
 		return

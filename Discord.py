@@ -9,6 +9,11 @@ import logging
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from LibraryX.GUI import Login, Register, Home
+from LibraryX.API import RPC
+
+
+SERVER_IP = "127.0.0.1"
+SERVER_PORT = 6666
 
 
 # DESC: The all-in-one class that hanles everything
@@ -21,6 +26,8 @@ class MainWindow(QMainWindow):
 		self.register_panel = Register.RegisterPanel()
 		self.login_panel = Login.LoginPanel()
 		self.home_panel = Home.HomePanel()
+		self.api = RPC.Client(SERVER_IP, SERVER_PORT)
+		self.api.run()
 
 		# connect signal
 		self.login_panel.Login_button.clicked.connect(self.goto_home)
