@@ -13,4 +13,3 @@ class CommentPanel(QWidget):
 	def __init__(self, author, comment):
 		super().__init__()
 		loadUi("UI/comment.ui", self)
-
