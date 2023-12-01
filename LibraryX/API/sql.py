@@ -36,7 +36,7 @@ class SQL:
         except Exception as e:
             print(f'[ERROR] Other exception in sql.command {command}: {e}')
 
-    def insertInfo(self, table: str, info: dict):
+    def insert_info(self, table: str, info: dict):
         try:
             if table == "user_information":
                 command = "INSERT INTO user_information(username, password) VALUES(%s, %s)"
@@ -55,7 +55,7 @@ class SQL:
         except Exception as e:
             print(f'[ERROR] Other exception in sql.insertInfo: {e}')
 
-    def findInfo(self, table: str, key: str, value):
+    def find_info(self, table: str, key: str, value):
         try:
             command = '''SELECT * FROM %s WHERE %s="%s"'''
             value = str(value)
@@ -65,7 +65,7 @@ class SQL:
         except Exception as e:
             print(f'[ERROR] Other exception in sql.findInfo: {e}')
 
-    def deleteInfo(self, table: str, key: str, value):
+    def delete_info(self, table: str, key: str, value):
         try:
             command = '''DELETE FROM %s WHERE %s="%s"'''
             value = str(value)
@@ -75,7 +75,7 @@ class SQL:
         except Exception as e:
             print(f'[ERROR] Other exception in sql.deleteInfo: {e}')
 
-    def getTable(self, table: str):
+    def get_table(self, table: str):
         try:
             command = "SELECT * FROM " + table
             result = self.command(command, ())
