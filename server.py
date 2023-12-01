@@ -3,7 +3,7 @@
 import logging
 
 from PyQt6.QtCore import pyqtSignal, QThread
-from LibraryX.API import sql
+from LibraryX.API import SQL
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from socketserver import ThreadingMixIn
 import threading
