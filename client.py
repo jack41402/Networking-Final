@@ -1,5 +1,7 @@
 # Student ID: D1166506
 # Name: 周嘉禾
+
+import logging
 import xmlrpc.client
 from PyQt6.QtCore import pyqtSignal, QThread
 import datetime

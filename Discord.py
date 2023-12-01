@@ -63,13 +63,30 @@ class MainWindow(QMainWindow):
 
 
 
-
 def main():
+	# configure the root logger
+	logging.basicConfig(
+		level=logging.INFO,
+		format='%(asctime)s [%(levelname)s] - %(message)s (%(name)s / %(funcName)s:%(lineno)d)',
+	)
+
+	logger = logging.getLogger(__name__)
+	logger.debug("This is debug")
+	logger.info("This is info")
+	logger.warning("This is warning")
+	logger.error("This is error")
+	logger.critical("This is critical")
+
+
+	# start application
 	app = QApplication([])
 	window = MainWindow()
 	window.hide()
 	app.exec()
 	return
 
+
+
 if __name__ == "__main__":
+	logger = logging.getLogger(__name__)
 	main()
