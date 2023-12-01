@@ -145,7 +145,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="Register_label_3">
+        <widget class="QLabel" name="Register_label">
          <property name="font">
           <font>
            <family>Arial</family>
