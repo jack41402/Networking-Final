@@ -5,22 +5,69 @@
 # DESC: Final Project
 
 
+import logging
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from Library.GUI import Consumer_Panel
+from LibraryX.GUI import Login, Register, Home
 
 
 # DESC: The all-in-one class that hanles everything
 class MainWindow(QMainWindow):
+	pageflip_signal = pyqtSignal()
+
 	def __init__(self):
 		super().__init__()
-		self.panel = Consumer_Panel.ClientPanel()
-		self.setCentralWidget(self.panel)
+		self.display_panel = None # reference to avoid instance deletion
+		self.register_panel = Register.RegisterPanel()
+		self.login_panel = Login.LoginPanel()
+		self.home_panel = Home.HomePanel()
+
+		# connect signal
+		self.login_panel.Login_button.clicked.connect(self.goto_home)
+		self.register_panel.Login_label.linkActivated.connect(self.goto_login)
+		self.login_panel.Register_label.linkActivated.connect(self.goto_register)
+
+		# default invoke
+		self.goto_login()
+
+
+	# display manager
+	def __swicth_panel(self, panel, size):
+		# hide previous widget
+		if self.display_panel:
+			self.display_panel.hide()
+	
+		# display new
+		self.display_panel = panel
+		self.display_panel.show()
+		self.display_panel.setFixedSize(*size)
+		return
+
+
+	# page flip
+	def goto_login(self):
+		self.__swicth_panel(self.login_panel, (400, 300))
+		return
+
+
+	# page flip
+	def goto_register(self):
+		self.__swicth_panel(self.register_panel, (400, 350))
+		return
+
+
+	# page flip
+	def goto_home(self):
+		self.__swicth_panel(self.home_panel, (1000, 600))
+		return
+
+
 
 
 def main():
 	app = QApplication([])
 	window = MainWindow()
-	window.show()
+	window.hide()
 	app.exec()
 	return
 
