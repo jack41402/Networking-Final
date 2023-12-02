@@ -3,8 +3,7 @@
 #
 # @All right reserved
 # DESC: Final Project
-
-
+import datetime
 import logging
 
 from PyQt6 import QtGui
@@ -58,23 +57,42 @@ class HomePanel(QWidget):
         return
 
     # re-render all the msg in a chat
-    def render_message(self):
-        self.logger.info("Trying to re-render all message from a chat")
-        self.scroll_area_widget = QWidget()
-        self.scroll_area_layout = QVBoxLayout()
-        self.scroll_area_layout.setSpacing(0)
+    def render_message(self, item):
+        try:
+            self.logger.info("Trying to re-render all message from a chat")
+            self.scroll_area_widget = QWidget()
+            self.scroll_area_layout = QVBoxLayout()
+            self.scroll_area_layout.setSpacing(0)
 
-        
+            friend = item.data(Qt.ItemDataRole.UserRole)
+            comments = self.api.get_comment(self.api.user_id, friend["user_id"])
+            for comment in comments:
+                form_widget = QWidget()
+                form = comment.Ui_Form()
+                form.setupUi(form_widget)
+                font = QtGui.QFont()
 
-        self.scroll_area_layout.addStretch()
-        self.scroll_area_widget.setLayout(self.scroll_area_layout)
-        self.scrollArea.setWidget(self.scroll_area_widget)
-        # request server to receive previous conversation detail
+                comment_author = self.api.username if comment[3] == self.api.user_id else friend["username"]
+                comment_content = comment[1]
+                comment_time = datetime.datetime.strptime(str(comment[2]), '%Y%m%dT%H:%M:%S')
 
-        # itterate, and render all the received data into the scrollarea
+                form.Author_label.setText(comment_author)
+                form.Comment_label.setText(comment_content)
+                form.Time_label.setText(comment_time)
 
-        # lets do a dummy test for render
-        return
+                font.setPointSize(9)
+                form.Comment_label.setFont(font)
+                font.setBold(True)
+                form.Author_label.setFont(font)
+
+                self.scroll_area_layout.addWidget(form_widget)
+
+            self.scroll_area_layout.addStretch()
+            self.scroll_area_widget.setLayout(self.scroll_area_layout)
+            self.scrollArea.setWidget(self.scroll_area_widget)
+            return
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.render_message: {e}')
 
     def friend_list(self):
         try:
