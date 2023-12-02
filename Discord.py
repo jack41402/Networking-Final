@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
 def main():
     # configure the root logger
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format='[%(levelname)s] - %(message)s (%(name)s / %(funcName)s:%(lineno)d)',
     )
 
