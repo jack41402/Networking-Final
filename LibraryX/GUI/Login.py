@@ -3,21 +3,21 @@
 #
 # @All right reserved
 # DESC: Final Project
-
-
+import logging
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 
-
 class LoginPanel(QWidget):
-	def __init__(self):
-		super().__init__()
-		loadUi("UI/login.ui", self)
+    def __init__(self, api):
+        super().__init__()
+        loadUi("UI/login.ui", self)
+        self.api = api
+        self.logger = logging.getLogger(__name__)
 
-		self.Login_button.clicked.connect(self.login)
+        self.Login_button.clicked.connect(self.login)
 
-	def login(self):
-		username = self.Username_label.text()
-		password = self.Password_label.text()
+    def login(self):
+        username = self.Username_label.text()
+        password = self.Password_label.text()

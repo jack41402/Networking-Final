@@ -12,9 +12,10 @@ from LibraryX.GUI import Comment
 
 
 class HomePanel(QWidget):
-	def __init__(self):
+	def __init__(self, api):
 		super().__init__()
 		loadUi("UI/home.ui", self)
+		self.api = api
 		self.logger = logging.getLogger(__name__)
 
 		# connect signal

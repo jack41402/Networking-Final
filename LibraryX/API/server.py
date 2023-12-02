@@ -1,8 +1,6 @@
 # Student ID: D1166506
 # Name: 周嘉禾
 import logging
-
-from PyQt6.QtCore import pyqtSignal, QThread
 from LibraryX.API import SQL
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from socketserver import ThreadingMixIn
@@ -15,9 +13,7 @@ class ThreadXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
 
-class Server(QThread):
-    server_signal = pyqtSignal(str)
-
+class Server(threading.Thread):
     def __init__(self, ip, port):
         super().__init__()
         self.ip = ip

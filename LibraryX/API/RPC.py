@@ -3,13 +3,11 @@
 
 import logging
 import xmlrpc.client
-from PyQt6.QtCore import pyqtSignal, QThread
 import datetime
+import threading
 
 
-class Client(QThread):
-    client_error_signal = pyqtSignal(str)
-
+class Client(threading.Thread):
     def __init__(self, ip: str, port: int):
         super().__init__()
         self.logger = logging.getLogger(__name__)
