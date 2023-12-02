@@ -24,7 +24,7 @@ class Server(QThread):
         self.port = port
         self.server = None
         self.lock = threading.Lock()
-        self.database = sql.SQL()
+        self.database = SQL.SQL()
 
     def run(self):
         self.connection()
