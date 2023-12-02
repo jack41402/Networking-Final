@@ -15,3 +15,9 @@ class LoginPanel(QWidget):
 	def __init__(self):
 		super().__init__()
 		loadUi("UI/login.ui", self)
+
+		self.Login_button.clicked.connect(self.login)
+
+	def login(self):
+		username = self.Username_label.text()
+		password = self.Password_label.text()
