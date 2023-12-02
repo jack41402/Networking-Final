@@ -78,6 +78,16 @@ class SQL:
         except Exception as e:
             logger.error(f'Other exception in SQL.find_info: {e}')
 
+    def find_comment(self, author_id, reply_id):
+        try:
+            command = '''SELECT * FROM comment WHERE (author_id, reply_id) IN ((%s, %s), (%s, %s))'''
+            author_id = str(author_id)
+            reply_id = str(reply_id)
+            result = self.command(command, (author_id, reply_id, reply_id, author_id))
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.find_friend: {e}')
+
     def find_friend(self, user_id, friend_id):
         try:
             command = '''SELECT * FROM friend WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
@@ -90,16 +100,6 @@ class SQL:
                 return False
         except Exception as e:
             logger.error(f'Other exception in SQL.find_friend: {e}')
-
-    def find_comment(self, user_id, reply_id):
-        try:
-            command = '''SELECT * FROM comment WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
-            user_id = str(user_id)
-            reply_id = str(reply_id)
-            result = self.command(command, (user_id, reply_id, reply_id, user_id))
-            return result
-        except Exception as e:
-            logger.error(f'Other exception in SQL.find_comment: {e}')
 
     def delete_info(self, table: str, key: str, value):
         try:

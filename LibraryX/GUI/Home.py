@@ -59,7 +59,6 @@ class HomePanel(QWidget):
         self.scroll_area_layout = QVBoxLayout()
         self.scroll_area_layout.setSpacing(0)
 
-        # Show comment
 
         self.scroll_area_layout.addStretch()
         self.scroll_area_widget.setLayout(self.scroll_area_layout)
@@ -70,6 +69,18 @@ class HomePanel(QWidget):
 
         # lets do a dummy test for render
         return
+
+    def friend_list(self):
+        friends = self.api.get_friend()
+        if friends is not None:
+            for friend in friends:
+                post = Post(row[0], row[1], row[2], row[3], row[4], self.client.user(row[4])[0][1])
+                item = QListWidgetItem(post.title)
+                item.setData(Qt.ItemDataRole.UserRole, post)
+                item.setFont(QtGui.QFont("Arial", 12))  # Set font and size
+                item.setSizeHint(QSize(100, 25))
+                self.ForumWindow.Article_listWidget.addItem(item)
+
 
     # user attempt to make a video call
     def video_call(self):

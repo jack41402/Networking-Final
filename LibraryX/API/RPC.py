@@ -16,6 +16,7 @@ class Client(threading.Thread):
         # CHECK HTTPS
         self.address = f'http://{self.ip}:{self.port}/'
         self.proxy = None
+        self.user_id = None
         self.username = None
 
     def run(self):
@@ -29,8 +30,13 @@ class Client(threading.Thread):
     def login(self, username: str, password: str):
         try:
             self.logger.info(f"Username: {username}")
-            self.username = username
-            return self.proxy.login(username, password)
+            if self.proxy.login(username, password):
+                user_info = self.find_username(username)[0]
+                self.user_id = user_info[0]
+                self.username = user_info[1]
+                return True
+            else:
+                return False
         except Exception as e:
             self.logger.error(f'Other exception in client.login: {e}')
 
@@ -52,20 +58,40 @@ class Client(threading.Thread):
     def delete(self, info):
         try:
             target = info["type"]
-            if target == "post":
-                target_id = info["post_id"]
-            elif target == "comment":
-                target_id = info["comment_id"]
-            elif target == "reply":
-                target_id = info["reply_id"]
-            else:
-                return False
+            match target:
+                case "post":
+                    target_id = info["post_id"]
+                case "comment":
+                    target_id = info["comment_id"]
+                case "reply":
+                    target_id = info["reply_id"]
+                case _:
+                    return False
             return self.proxy.delete(target, target_id)
         except Exception as e:
             self.logger.error(f'Other exception in client.delete: {e}')
-    
-    def user(self, user_id: int):
-        return self.proxy.user(user_id)
+
+    def get_friend(self, user_id):
+        try:
+            friend_info = []
+            friends = self.proxy.friend_list(user_id)
+            for friend in friends:
+                friend_info.append({"user_id": friend[0], "username": friend[1]})
+            return tuple(friend_info)
+        except Exception as e:
+            self.logger.error(f'Other exception in client.get_friend: {e}')
+
+    def get_comment(self, author_id, reply_id):
+        try:
+            return self.proxy.get_comment(author_id, reply_id)
+        except Exception as e:
+            self.logger.error(f'Other exception in client.get_comment: {e}')
+
+    def find_user_id(self, user_id: int):
+        return self.proxy.find_user_id(user_id)
+
+    def find_username(self, username: str):
+        return self.proxy.find_username(username)
 
     def close(self):
         pass

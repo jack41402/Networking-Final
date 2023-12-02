@@ -42,9 +42,13 @@ class Server(threading.Thread):
             self.server.register_function(self.register, "register")
             self.server.register_function(self.comment, "comment")
             self.server.register_function(self.friend, "friend")
+            self.server.register_function(self.get_comment, "get_comment")
+            self.server.register_function(self.friend_list, "friend_list")
             self.server.register_function(self.delete, "delete")
-            self.server.register_function(self.user, "user")
-            logger.info("Function login, register, comment, friend, delete, and user have been registered.")
+            self.server.register_function(self.find_user_id, "find_user_id")
+            self.server.register_function(self.find_username, "find_username")
+            logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
+                        "and find_username have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
 
@@ -113,10 +117,26 @@ class Server(threading.Thread):
 
     def friend(self, user_id, friend_id):
         try:
-            self.database.insert_info("friend", {"user_id": reply_id, "friend_id": friend_id})
+            self.database.insert_info("friend", {"user_id": user_id, "friend_id": friend_id})
             return True
         except Exception as e:
             logger.error(f'Other exception in server.friend: {e}')
+
+    def get_comment(self, author_id, reply_id):
+        try:
+            with self.lock:
+                comment = self.database.find_comment(author_id, reply_id)
+            return comment
+        except Exception as e:
+            print(f'[ERROR] Other exception in server.get_comment: {e}')
+
+    def friend_list(self, user_id):
+        try:
+            with self.lock:
+                friend = self.database.find_info("friend", "user_id", user_id)
+            return friend
+        except Exception as e:
+            print(f'[ERROR] Other exception in server.friend_list: {e}')
 
     def delete(self, target: str, target_id: int):
         try:
@@ -155,8 +175,11 @@ class Server(threading.Thread):
         except Exception as e:
             logger.error(f'Other exception in server.delete: {e}')
 
-    def user(self, user_id: int):
+    def find_user_id(self, user_id: int):
         return self.database.find_info("user_information", "id", user_id)
+
+    def find_username(self, username: str):
+        return self.database.find_info("user_information", "username", username)
 
     def close(self):
         pass
