@@ -20,8 +20,11 @@ class RegisterPanel(QWidget):
 		self.Register_button.clicked.connect(self.register)
 
 	def register(self):
-		username = self.Username_lineEdit.text()
-		password = self.Password_lienEdit.text()
-		confirm_password = self.Confirm_Password_lineEdit.text()
-		register_status = self.api.register(username, password, confirm_password)
-		# you can use register_status to determine the message box
+		try:
+			username = self.Username_lineEdit.text()
+			password = self.Password_lienEdit.text()
+			confirm_password = self.Confirm_Password_lineEdit.text()
+			register_status = self.api.register(username, password, confirm_password)
+			# you can use register_status to determine the message box
+		except Exception as e:
+			self.logger.error(f'Other exception in RegisterPanel.register: {e}')
