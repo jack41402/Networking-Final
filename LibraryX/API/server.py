@@ -41,9 +41,10 @@ class Server(threading.Thread):
             self.server.register_function(self.login, "login")
             self.server.register_function(self.register, "register")
             self.server.register_function(self.comment, "comment")
+            self.server.register_function(self.friend, "friend")
             self.server.register_function(self.delete, "delete")
             self.server.register_function(self.user, "user")
-            logger.info("Function login, register, comment, delete, and user have been registered.")
+            logger.info("Function login, register, comment, friend, delete, and user have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
 
@@ -109,6 +110,13 @@ class Server(threading.Thread):
             return True
         except Exception as e:
             logger.error(f'Other exception in server.comment: {e}')
+
+    def friend(self, user_id, friend_id):
+        try:
+            self.database.insert_info("friend", {"user_id": reply_id, "friend_id": friend_id})
+            return True
+        except Exception as e:
+            logger.error(f'Other exception in server.friend: {e}')
 
     def delete(self, target: str, target_id: int):
         try:
