@@ -76,7 +76,6 @@ def main():
     RPC_server = server.Server(SERVER_IP, SERVER_PORT)
     RPC_server.start()
 
-
     # start application
     app = QApplication([])
     window = MainWindow()

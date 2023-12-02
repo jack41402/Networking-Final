@@ -67,14 +67,15 @@ class HomePanel(QWidget):
             friend = item.data(Qt.ItemDataRole.UserRole)
             comments = self.api.get_comment(self.api.user_id, friend["user_id"])
             for comment in comments:
-                form_widget = QWidget()
-                form = comment.Ui_Form()
-                form.setupUi(form_widget)
+                form = loadUi("UI/comment.ui")
                 font = QtGui.QFont()
 
-                comment_author = self.api.username if comment[3] == self.api.user_id else friend["username"]
+                comment_author_id = comment[4]
+                comment_author = self.api.username if comment_author_id == self.api.user_id else friend["username"]
                 comment_content = comment[1]
                 comment_time = datetime.datetime.strptime(str(comment[2]), '%Y%m%dT%H:%M:%S')
+                comment_time = comment_time.strftime("%Y/%m/%d %H:%M")
+                print(type(comment_time))
 
                 form.Author_label.setText(comment_author)
                 form.Comment_label.setText(comment_content)
@@ -85,7 +86,7 @@ class HomePanel(QWidget):
                 font.setBold(True)
                 form.Author_label.setFont(font)
 
-                self.scroll_area_layout.addWidget(form_widget)
+                self.scroll_area_layout.addWidget(form)
 
             self.scroll_area_layout.addStretch()
             self.scroll_area_widget.setLayout(self.scroll_area_layout)
