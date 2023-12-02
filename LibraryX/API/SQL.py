@@ -1,5 +1,4 @@
 import os
-
 import MySQLdb
 import yaml
 import logging
@@ -23,7 +22,7 @@ class SQL:
             logger.error("CONFIG FORMAT ERROR.")
             return False
         except Exception as e:
-            logger.error(f'Other exception in sql.connection: {e}')
+            logger.error(f'Other exception in SQL.connection: {e}')
             return False
         try:
             self.database = MySQLdb.connect(**config)
@@ -31,7 +30,7 @@ class SQL:
             logger.error(f'CANNOT CONNECT TO MySQL DATABASE {config["database"]}: {e}')
             return False
         except Exception as e:
-            logger.error(f'Other exception in sql.connection: {e}')
+            logger.error(f'Other exception in SQL.connection: {e}')
             return False
 
     def command(self, command: str, value: tuple):
@@ -43,9 +42,9 @@ class SQL:
                 return result
         except MySQLdb.Error as e:
             self.database.rollback()
-            logger.error(f'MySQL error in sql.command {command}: {e}')
+            logger.error(f'MySQL error in SQL.command {command}: {e}')
         except Exception as e:
-            logger.error(f'Other exception in sql.command {command}: {e}')
+            logger.error(f'Other exception in SQL.command {command}: {e}')
 
     def insert_info(self, table: str, info: dict):
         try:
@@ -59,14 +58,14 @@ class SQL:
                     self.command(command, (info["user_id"], info["friend_id"]))
                     logger.info("Insert into friend successfully.")
                 case "comment":
-                    command = "INSERT INTO comment(content, time, author_id, reply_id) VALUES(%s, NOW(), %s, %s)"
-                    self.command(command, (info["floor"], info["content"], info["author_id"], info["post_id"]))
+                    command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
+                    self.command(command, (info["content"], info["is_file"], info["author_id"], info["reply_id"]))
                     logger.info("Insert into comment successfully.")
                 case _:
-                    logger.error(f'''TABLE {table} DOES NOT EXIST''')
+                    logger.error(f'''TABLE {table} DOES NOT EXIST.''')
                     return False
         except Exception as e:
-            logger.error(f'Other exception in sql.insert_info: {e}')
+            logger.error(f'Other exception in SQL.insert_info: {e}')
 
     def find_info(self, table: str, key: str, value):
         try:
@@ -76,7 +75,30 @@ class SQL:
             result = self.command(command, ())
             return result
         except Exception as e:
-            logger.error(f'Other exception in sql.find_info: {e}')
+            logger.error(f'Other exception in SQL.find_info: {e}')
+
+    def find_friend(self, user_id, friend_id):
+        try:
+            command = '''SELECT * FROM friend WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
+            user_id = str(user_id)
+            friend_id = str(friend_id)
+            result = self.command(command, (user_id, friend_id, friend_id, user_id))
+            if len(result) == 2:
+                return True
+            else:
+                return False
+        except Exception as e:
+            logger.error(f'Other exception in SQL.find_friend: {e}')
+
+    def find_comment(self, user_id, reply_id):
+        try:
+            command = '''SELECT * FROM comment WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
+            user_id = str(user_id)
+            reply_id = str(reply_id)
+            result = self.command(command, (user_id, reply_id, reply_id, user_id))
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.find_comment: {e}')
 
     def delete_info(self, table: str, key: str, value):
         try:
@@ -86,7 +108,7 @@ class SQL:
             result = self.command(command, ())
             return result
         except Exception as e:
-            logger.error(f'Other exception in sql.delete_info: {e}')
+            logger.error(f'Other exception in SQL.delete_info: {e}')
 
     def get_table(self, table: str):
         try:
@@ -96,4 +118,4 @@ class SQL:
                 logger.info(f'Result in table {table}: {result}')
             return result
         except Exception as e:
-            logger.error(f'Other exception in sql.get_table: {e}')
+            logger.error(f'Other exception in SQL.get_table: {e}')
