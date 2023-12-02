@@ -19,7 +19,10 @@ class LoginPanel(QWidget):
         self.Login_button.clicked.connect(self.login)
 
     def login(self):
-        username = self.Username_label.text()
-        password = self.Password_label.text()
-        login_status = self.api.login(username, password)
-        # you can use login_status to determine the message box
+        try:
+            username = self.Username_label.text()
+            password = self.Password_label.text()
+            login_status = self.api.login(username, password)
+            # you can use login_status to determine the message box
+        except Exception as e:
+            self.logger.error(f'Other exception in client.login: {e}')
