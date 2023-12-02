@@ -21,12 +21,14 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.display_panel = None  # reference to avoid instance deletion
-        self.register_panel = Register.RegisterPanel()
-        self.login_panel = Login.LoginPanel()
-        self.home_panel = Home.HomePanel()
         self.api = RPC.Client(SERVER_IP, SERVER_PORT)
         self.api.start()
+
+        self.display_panel = None  # reference to avoid instance deletion
+        self.register_panel = Register.RegisterPanel(self.api)
+        self.login_panel = Login.LoginPanel(self.api)
+        self.home_panel = Home.HomePanel(self.api)
+
 
         # connect signal
         self.login_panel.Login_button.clicked.connect(self.goto_home)
