@@ -176,7 +176,7 @@ class Server(threading.Thread):
             logger.error(f'Other exception in server.delete: {e}')
 
     def find_user_id(self, user_id: int):
-        return self.database.find_info("user_information", "id", user_id)
+        return self.database.find_info("user_information", "user_id", user_id)
 
     def find_username(self, username: str):
         return self.database.find_info("user_information", "username", username)

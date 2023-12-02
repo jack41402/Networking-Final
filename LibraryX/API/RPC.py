@@ -38,13 +38,13 @@ class Client(threading.Thread):
             else:
                 return False
         except Exception as e:
-            self.logger.error(f'Other exception in client.login: {e}')
+            self.logger.error(f'Other exception in rpc.login: {e}')
 
     def register(self, username: str, password: str, confirm_password: str):
         try:
             return self.proxy.register(username, password, confirm_password)
         except Exception as e:
-            self.logger.error(f'Other exception in client.register: {e}')
+            self.logger.error(f'Other exception in rpc.register: {e}')
 
     def send(self, info):
         try:
@@ -53,7 +53,7 @@ class Client(threading.Thread):
             elif info["type"] == "reply":
                 return self.proxy.reply(info["author"], info["content"], info["comment_id"])
         except Exception as e:
-            self.logger.error(f'Other exception in client.send: {e}')
+            self.logger.error(f'Other exception in rpc.send: {e}')
 
     def delete(self, info):
         try:
@@ -69,23 +69,24 @@ class Client(threading.Thread):
                     return False
             return self.proxy.delete(target, target_id)
         except Exception as e:
-            self.logger.error(f'Other exception in client.delete: {e}')
+            self.logger.error(f'Other exception in rpc.delete: {e}')
 
     def get_friend(self, user_id):
         try:
             friend_info = []
             friends = self.proxy.friend_list(user_id)
             for friend in friends:
-                friend_info.append({"user_id": friend[0], "username": friend[1]})
+                info = self.find_user_id(friend[1])[0]
+                friend_info.append({"user_id": info[0], "username": info[1]})
             return tuple(friend_info)
         except Exception as e:
-            self.logger.error(f'Other exception in client.get_friend: {e}')
+            self.logger.error(f'Other exception in rpc.get_friend: {e}')
 
     def get_comment(self, author_id, reply_id):
         try:
             return self.proxy.get_comment(author_id, reply_id)
         except Exception as e:
-            self.logger.error(f'Other exception in client.get_comment: {e}')
+            self.logger.error(f'Other exception in rpc.get_comment: {e}')
 
     def find_user_id(self, user_id: int):
         return self.proxy.find_user_id(user_id)

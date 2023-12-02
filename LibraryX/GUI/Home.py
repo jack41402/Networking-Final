@@ -6,8 +6,12 @@
 
 
 import logging
+
+from PyQt6 import QtGui
+from PyQt6.QtCore import Qt, QSize
 from PyQt6.uic import loadUi
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidgetItem
+
 from LibraryX.GUI import Comment
 
 
@@ -24,6 +28,7 @@ class HomePanel(QWidget):
         self.EmbedFile_Button.clicked.connect(self.embed_file)
         self.VoiceCall_Button.clicked.connect(self.voice_call)
         self.VideoCall_Button.clicked.connect(self.video_call)
+        self.Friend_listWidget.itemClicked.connect(self.render_message)
 
         # Widget setup
         self.scroll_area_widget = None
@@ -59,6 +64,7 @@ class HomePanel(QWidget):
         self.scroll_area_layout = QVBoxLayout()
         self.scroll_area_layout.setSpacing(0)
 
+        
 
         self.scroll_area_layout.addStretch()
         self.scroll_area_widget.setLayout(self.scroll_area_layout)
@@ -71,16 +77,17 @@ class HomePanel(QWidget):
         return
 
     def friend_list(self):
-        friends = self.api.get_friend()
-        if friends is not None:
-            for friend in friends:
-                post = Post(row[0], row[1], row[2], row[3], row[4], self.client.user(row[4])[0][1])
-                item = QListWidgetItem(post.title)
-                item.setData(Qt.ItemDataRole.UserRole, post)
-                item.setFont(QtGui.QFont("Arial", 12))  # Set font and size
-                item.setSizeHint(QSize(100, 25))
-                self.ForumWindow.Article_listWidget.addItem(item)
-
+        try:
+            friends = self.api.get_friend(self.api.user_id)
+            if friends is not None:
+                for friend in friends:
+                    item = QListWidgetItem(friend["username"])
+                    item.setData(Qt.ItemDataRole.UserRole, friend)
+                    item.setFont(QtGui.QFont("Arial", 12))  # Set font and size
+                    item.setSizeHint(QSize(100, 25))
+                    self.Friend_listWidget.addItem(item)
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.friend_list: {e}')
 
     # user attempt to make a video call
     def video_call(self):

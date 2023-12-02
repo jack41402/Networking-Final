@@ -29,7 +29,6 @@ class MainWindow(QMainWindow):
         self.login_panel = Login.LoginPanel(self.api)
         self.home_panel = Home.HomePanel(self.api)
 
-
         # connect signal
         self.login_panel.Login_button.clicked.connect(self.goto_home)
         self.register_panel.Login_label.linkActivated.connect(self.goto_login)
@@ -63,6 +62,7 @@ class MainWindow(QMainWindow):
     # page flip
     def goto_home(self):
         self.__swicth_panel(self.home_panel, (1000, 600))
+        self.home_panel.friend_list()
         return
 
 
