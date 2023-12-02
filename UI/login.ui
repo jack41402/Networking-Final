@@ -124,12 +124,15 @@
        <property name="text">
         <string>Login</string>
        </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QLabel" name="New_to_here_label_3">
+        <widget class="QLabel" name="New_to_here_label">
          <property name="font">
           <font>
            <family>Arial</family>

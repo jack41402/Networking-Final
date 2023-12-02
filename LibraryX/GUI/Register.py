@@ -4,7 +4,7 @@
 # @All right reserved
 # DESC: Final Project
 from PyQt6.uic import loadUi
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QWidget
 import logging
 
@@ -30,3 +30,7 @@ class RegisterPanel(QWidget):
         # you can use register_status to determine the message box
         except Exception as e:
             self.logger.error(f'Other exception in RegisterPanel.register: {e}')
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            self.Register_button.click()

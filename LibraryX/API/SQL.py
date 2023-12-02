@@ -80,7 +80,7 @@ class SQL:
 
     def find_comment(self, author_id, reply_id):
         try:
-            command = '''SELECT * FROM comment WHERE (author_id, reply_id) IN ((%s, %s), (%s, %s))'''
+            command = '''SELECT * FROM comment WHERE (author_id, reply_id) IN ((%s, %s), (%s, %s))  ORDER BY time ASC'''
             author_id = str(author_id)
             reply_id = str(reply_id)
             result = self.command(command, (author_id, reply_id, reply_id, author_id))

@@ -153,6 +153,9 @@
        <property name="text">
         <string>Register</string>
        </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>

@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
     def goto_home(self):
         self.__swicth_panel(self.home_panel, (1000, 600))
         self.home_panel.friend_list()
+        self.home_panel.Username_label.setText(self.api.username)
         return
 
 
