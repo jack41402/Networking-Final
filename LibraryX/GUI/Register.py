@@ -23,7 +23,7 @@ class RegisterPanel(QWidget):
     def register(self):
         try:
             username = self.Username_lineEdit.text()
-            password = self.Password_lienEdit.text()
+            password = self.Password_lineEdit.text()
             confirm_password = self.Confirm_Password_lineEdit.text()
             register_status = self.api.register(username, password, confirm_password)
             self.register_signal.emit(register_status)
