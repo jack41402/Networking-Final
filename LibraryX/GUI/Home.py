@@ -8,6 +8,7 @@
 import logging
 from PyQt6.uic import loadUi
 from PyQt6.QtWidgets import QWidget
+from LibraryX.GUI import Comment
 
 
 class HomePanel(QWidget):
@@ -23,4 +24,5 @@ class HomePanel(QWidget):
 	# send the comment to server
 	def post_comment(self):
 		self.logger.info("Trying to post the comment to server")
+
 		return
