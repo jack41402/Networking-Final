@@ -13,14 +13,19 @@ class ThreadXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
 
-class Server(threading.Thread):
+class Server():
     def __init__(self, ip, port):
-        super().__init__()
         self.ip = ip
         self.port = port
         self.server = None
         self.lock = threading.Lock()
         self.database = SQL.SQL()
+        self.thread = threading.Thread(target=self.run)
+        self.thread.daemon = True
+
+    def start(self):
+        self.thread.start()
+        return
 
     def run(self):
         self.connection()

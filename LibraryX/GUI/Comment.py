@@ -10,6 +10,11 @@ from PyQt6.QtWidgets import QWidget
 
 
 class CommentPanel(QWidget):
-	def __init__(self, author, comment):
+	def __init__(self, author, message, timestamp):
 		super().__init__()
 		loadUi("UI/comment.ui", self)
+
+		# set data
+		self.Author_label.setText(author)
+		self.Message_label.setText(message)
+		self.Timestamp_label.setText(timestamp)

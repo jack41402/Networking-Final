@@ -5,12 +5,10 @@
 # DESC: Final Project
 import datetime
 import logging
-
 from PyQt6 import QtGui
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.uic import loadUi
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidgetItem
-
 from LibraryX.GUI import Comment
 
 
@@ -18,8 +16,8 @@ class HomePanel(QWidget):
     def __init__(self, api):
         super().__init__()
         loadUi("UI/home.ui", self)
-        self.api = api
         self.logger = logging.getLogger(__name__)
+        self.api = api
 
         # connect signal
         self.Setting_Button.clicked.connect(self.goto_setting)
@@ -32,6 +30,10 @@ class HomePanel(QWidget):
         # Widget setup
         self.scroll_area_widget = None
         self.scroll_area_layout = None
+
+    # adding a custom msg entry into the scrowarea
+    def __add_message(self, author, message, timestamp):
+    	return
 
     # maybe implement a user setting panel if we have time
     def goto_setting(self):
@@ -95,6 +97,7 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
 
+    # 
     def friend_list(self):
         try:
             friends = self.api.get_friend(self.api.user_id)

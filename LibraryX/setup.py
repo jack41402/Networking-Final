@@ -10,8 +10,8 @@ setup(
     packages=find_packages(),  # Automatically find all packages in your project
     install_requires=[
         # List of dependencies, for example:
-        # 'numpy >= 1.18.1',
-        # 'pandas >= 1.0.1',
+        mysqlclient,
+        pyYAML,
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
