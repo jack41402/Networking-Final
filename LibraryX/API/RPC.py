@@ -24,7 +24,7 @@ class Client(threading.Thread):
     def connection(self):
         self.logger.info("Connecting to %s port %s" % (self.ip, self.port))
         self.proxy = xmlrpc.client.ServerProxy(self.address, allow_none=True)
-        #self.logger.info("[CLIENT] Connected successfully.")
+        self.logger.info("Connected successfully.")
 
     def login(self, username: str, password: str):
         try:
@@ -40,21 +40,6 @@ class Client(threading.Thread):
         except Exception as e:
             self.logger.error(f'Other exception in client.register: {e}')
 
-    def post(self, title: str, content: str):
-        try:
-            return self.proxy.create(title, content, self.username)
-        except Exception as e:
-            self.logger.error(f'Other exception in client.post: {e}')
-
-    def subject(self):
-        try:
-            result = self.proxy.subject()
-            for row in result:
-                row[3] = datetime.datetime.strptime(str(row[3]), '%Y%m%dT%H:%M:%S')
-            return result
-        except Exception as e:
-            self.logger.error(f'Other exception in client.subject: {e}')
-
     def send(self, info):
         try:
             if info["type"] == "comment":
@@ -63,30 +48,6 @@ class Client(threading.Thread):
                 return self.proxy.reply(info["author"], info["content"], info["comment_id"])
         except Exception as e:
             self.logger.error(f'Other exception in client.send: {e}')
-
-    def comment(self, author: str, content: str, post_id: int):
-        try:
-            return self.proxy.comment(author, content, post_id)
-        except Exception as e:
-            self.logger.error(f'Other exception in client.comment: {e}')
-
-    def reply(self, author: str, content: str, comment_id: int):
-        try:
-            return self.proxy.reply(content, author, comment_id)
-        except Exception as e:
-            self.logger.error(f'Other exception in client.reply: {e}')
-
-    def discussion(self, post_id):
-        try:
-            result = self.proxy.discussion(post_id)
-            for row in result:
-                comment = row["comment"]
-                comment["time"] = datetime.datetime.strptime(str(comment["time"]), '%Y%m%dT%H:%M:%S')
-                for reply in row["reply"]:
-                    reply["time"] = datetime.datetime.strptime(str(reply["time"]), '%Y%m%dT%H:%M:%S')
-            return result
-        except Exception as e:
-            self.logger.error(f'Other exception in client.discussion: {e}')
 
     def delete(self, info):
         try:
@@ -102,14 +63,7 @@ class Client(threading.Thread):
             return self.proxy.delete(target, target_id)
         except Exception as e:
             self.logger.error(f'Other exception in client.delete: {e}')
-
-    def findReplyInfo(self, comment_id, reply_id):
-        try:
-            result = self.proxy.findReplyInfo(comment_id, reply_id)
-            return result
-        except Exception as e:
-            self.logger.error(f'Other exception in server.findReplyInfo: {e}')
-
+    
     def user(self, user_id: int):
         return self.proxy.user(user_id)
 
