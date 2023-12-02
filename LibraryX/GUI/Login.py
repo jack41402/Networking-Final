@@ -25,4 +25,4 @@ class LoginPanel(QWidget):
             login_status = self.api.login(username, password)
             # you can use login_status to determine the message box
         except Exception as e:
-            self.logger.error(f'Other exception in client.login: {e}')
+            self.logger.error(f'Other exception in LoginPanel.login: {e}')
