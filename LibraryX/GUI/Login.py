@@ -21,3 +21,5 @@ class LoginPanel(QWidget):
     def login(self):
         username = self.Username_label.text()
         password = self.Password_label.text()
+        login_status = self.api.login(username, password)
+        # you can use login_status to determine the message box
