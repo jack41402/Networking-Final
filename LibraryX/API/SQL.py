@@ -53,9 +53,10 @@ class SQL:
                     command = "INSERT INTO user_information(username, password) VALUES(%s, %s)"
                     self.command(command, (info["username"], info["password"]))
                     logger.info("Insert into user_information successfully.")
-                case "forum":
+                case "friend":
                     command = "INSERT INTO friend(user_id, friend_id) VALUES(%s, %s)"
                     self.command(command, (info["user_id"], info["friend_id"]))
+                    self.command(command, (info["friend_id"], info["user_id"]))
                     logger.info("Insert into friend successfully.")
                 case "comment":
                     command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
@@ -109,6 +110,16 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.delete_info: {e}')
+
+    def delete_friend(self, user_id, friend_id):
+        try:
+            command = '''DELETE FROM comment WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
+            user_id = str(user_id)
+            friend_id = str(friend_id)
+            result = self.command(command, (user_id, friend_id, friend_id, user_id))
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.delete_friend: {e}')
 
     def get_table(self, table: str):
         try:
