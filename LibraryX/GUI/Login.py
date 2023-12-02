@@ -22,8 +22,6 @@ class LoginPanel(QWidget):
         try:
             username = self.Username_lineEdit.text()
             password = self.Password_lineEdit.text()
-            print(type(username))
-            print(type(password))
             login_status = self.api.login(username, password)
             # you can use login_status to determine the message box
         except Exception as e:

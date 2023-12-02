@@ -28,7 +28,6 @@ class Client(threading.Thread):
 
     def login(self, username: str, password: str):
         try:
-            print(username)
             self.logger.info(f"Username: {username}")
             self.username = username
             return self.proxy.login(username, password)
