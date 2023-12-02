@@ -12,6 +12,7 @@ class Client(QThread):
 
     def __init__(self, ip: str, port: int):
         super().__init__()
+        self.logger = logging.getLogger(__name__)
         self.ip = ip
         self.port = port
         # CHECK HTTPS
@@ -23,29 +24,29 @@ class Client(QThread):
         self.connection()
 
     def connection(self):
-        print("Connecting to %s port %s" % (self.ip, self.port))
+        self.logger.info("Connecting to %s port %s" % (self.ip, self.port))
         self.proxy = xmlrpc.client.ServerProxy(self.address, allow_none=True)
-        print("[CLIENT] Connected successfully.")
+        #self.logger.info("[CLIENT] Connected successfully.")
 
     def login(self, username: str, password: str):
         try:
-            print("Username: ", username)
+            self.logger.info("Username: ", username)
             self.username = username
             return self.proxy.login(username, password)
         except Exception as e:
-            print(f'[ERROR] Other exception in client.login: {e}')
+            self.logger.error(f'Other exception in client.login: {e}')
 
     def register(self, username: str, password: str, confirm_password: str):
         try:
             return self.proxy.register(username, password, confirm_password)
         except Exception as e:
-            print(f'[ERROR] Other exception in client.register: {e}')
+            self.logger.error(f'Other exception in client.register: {e}')
 
     def post(self, title: str, content: str):
         try:
             return self.proxy.create(title, content, self.username)
         except Exception as e:
-            print(f'[ERROR] Other exception in client.post: {e}')
+            self.logger.error(f'Other exception in client.post: {e}')
 
     def subject(self):
         try:
@@ -54,7 +55,7 @@ class Client(QThread):
                 row[3] = datetime.datetime.strptime(str(row[3]), '%Y%m%dT%H:%M:%S')
             return result
         except Exception as e:
-            print(f'[ERROR] Other exception in client.subject: {e}')
+            self.logger.error(f'Other exception in client.subject: {e}')
 
     def send(self, info):
         try:
@@ -63,19 +64,19 @@ class Client(QThread):
             elif info["type"] == "reply":
                 return self.proxy.reply(info["author"], info["content"], info["comment_id"])
         except Exception as e:
-            print(f'[ERROR] Other exception in client.send: {e}')
+            self.logger.error(f'Other exception in client.send: {e}')
 
     def comment(self, author: str, content: str, post_id: int):
         try:
             return self.proxy.comment(author, content, post_id)
         except Exception as e:
-            print(f'[ERROR] Other exception in client.comment: {e}')
+            self.logger.error(f'Other exception in client.comment: {e}')
 
     def reply(self, author: str, content: str, comment_id: int):
         try:
             return self.proxy.reply(content, author, comment_id)
         except Exception as e:
-            print(f'[ERROR] Other exception in client.reply: {e}')
+            self.logger.error(f'Other exception in client.reply: {e}')
 
     def discussion(self, post_id):
         try:
@@ -87,7 +88,7 @@ class Client(QThread):
                     reply["time"] = datetime.datetime.strptime(str(reply["time"]), '%Y%m%dT%H:%M:%S')
             return result
         except Exception as e:
-            print(f'[ERROR] Other exception in client.discussion: {e}')
+            self.logger.error(f'Other exception in client.discussion: {e}')
 
     def delete(self, info):
         try:
@@ -102,14 +103,14 @@ class Client(QThread):
                 return False
             return self.proxy.delete(target, target_id)
         except Exception as e:
-            print(f'[ERROR] Other exception in client.delete: {e}')
+            self.logger.error(f'Other exception in client.delete: {e}')
 
     def findReplyInfo(self, comment_id, reply_id):
         try:
             result = self.proxy.findReplyInfo(comment_id, reply_id)
             return result
         except Exception as e:
-            print(f'[ERROR] Other exception in server.findReplyInfo: {e}')
+            self.logger.error(f'Other exception in server.findReplyInfo: {e}')
 
     def user(self, user_id: int):
         return self.proxy.user(user_id)
