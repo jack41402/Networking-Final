@@ -7,7 +7,7 @@
 
 import logging
 from PyQt6.uic import loadUi
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from LibraryX.GUI import Comment
 
 
@@ -24,6 +24,10 @@ class HomePanel(QWidget):
         self.EmbedFile_Button.clicked.connect(self.embed_file)
         self.VoiceCall_Button.clicked.connect(self.voice_call)
         self.VideoCall_Button.clicked.connect(self.video_call)
+
+        # Widget setup
+        self.scroll_area_widget = None
+        self.scroll_area_layout = None
 
     # maybe implement a user setting panel if we have time
     def goto_setting(self):
@@ -51,7 +55,15 @@ class HomePanel(QWidget):
     # re-render all the msg in a chat
     def render_message(self):
         self.logger.info("Trying to re-render all message from a chat")
+        self.scroll_area_widget = QWidget()
+        self.scroll_area_layout = QVBoxLayout()
+        self.scroll_area_layout.setSpacing(0)
 
+        # Show comment
+
+        self.scroll_area_layout.addStretch()
+        self.scroll_area_widget.setLayout(self.scroll_area_layout)
+        self.scrollArea.setWidget(self.scroll_area_widget)
         # request server to receive previous conversation detail
 
         # itterate, and render all the received data into the scrollarea
