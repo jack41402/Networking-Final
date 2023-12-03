@@ -18,14 +18,14 @@ class HomePanel(QWidget):
     def __init__(self, api):
         super().__init__()
         loadUi("UI/home.ui", self)
-        
+
         self.api = api
         self.current_item = None
         self.logger = logging.getLogger(__name__)
-        self.audio_agent = Audio.AudioUtils() # epic audio recording agent
-        self.temporary_received_audiofile = None # temporary received audio file from friend
-        self.temporary_recored_audiofile = None # temporary self recorded audio file
-        self.audio_recording = False # audio recording status
+        self.audio_agent = Audio.AudioUtils()  # epic audio recording agent
+        self.temporary_received_audiofile = None  # temporary received audio file from friend
+        self.temporary_recored_audiofile = None  # temporary self recorded audio file
+        self.audio_recording = False  # audio recording status
 
         # connect signal
         self.Setting_Button.clicked.connect(self.goto_setting)
@@ -47,26 +47,26 @@ class HomePanel(QWidget):
 
     # start record an audio message
     def record_audio_message(self):
-    	if not (self.audio_recording): # if not recording now, start recording
-    		self.audio_recording = True
-    		self.audio_agent.start_record()
+        if not self.audio_recording:  # if not recording now, start recording
+            self.audio_recording = True
+            self.audio_agent.start_record()
 
-    		# change the text on audio icon
-    		self.AudioRecord_Button.setText("Stop\nRecord")
-    		return
+            # change the text on audio icon
+            self.AudioRecord_Button.setText("Stop\nRecord")
+            return
 
-    	else: # if recording now, stop recoridng
-    		self.audio_recording = False
-    		self.audio_agent.stop_record()
+        else:  # if recording now, stop recoridng
+            self.audio_recording = False
+            self.audio_agent.stop_record()
 
-    		# save the audio filepath to attribute for further sending
-    		self.temporary_recored_audiofile = self.audio_agent.tempfile
-    		self.AudioRecord_Button.setText("Audio\nRecord")
-    		return
+            # save the audio filepath to attribute for further sending
+            self.temporary_recored_audiofile = self.audio_agent.tempfile
+            self.AudioRecord_Button.setText("Audio\nRecord")
+            return
 
     # play an received audio message
     def play_audio_message(self):
-    	return
+        return
 
     # embed a file to message in order to send to the receiver
     def embed_file(self):
@@ -100,7 +100,7 @@ class HomePanel(QWidget):
 
     # send the audio messge to server
     def send_audio_message(self, audio_filepath):
-    	return
+        return
 
     # re-render all the msg in a chat
     def render_message(self, item):
@@ -125,7 +125,7 @@ class HomePanel(QWidget):
                 comment_time = datetime.datetime.strptime(str(comment[2]), '%Y%m%dT%H:%M:%S')
                 if comment_time.date() == today:
                     comment_time = comment_time.strftime("Today %H:%M")
-                elif comment_time.date() == today-time_delta:
+                elif comment_time.date() == today - time_delta:
                     comment_time = comment_time.strftime("Yesterday %H:%M")
                 else:
                     comment_time = comment_time.strftime("%Y/%M/%d %H:%M")
@@ -178,30 +178,14 @@ class HomePanel(QWidget):
         # I have no idea of the implmentation of this too
         return
 
-    # wtf
+    # bind return and enter key to send button
     def eventFilter(self, obj, event):
         try:
             if event.type() == QEvent.Type.KeyPress and obj is self.Comment_textEdit:
-                if (event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter) and self.Comment_textEdit.hasFocus():
+                if (
+                        event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter) and self.Comment_textEdit.hasFocus():
                     if self.Comment_textEdit.toPlainText() != "":
                         self.Send_Button.click()
             return super().eventFilter(obj, event)
         except Exception as e:
             self.logger.error(f'Other exception in Home.eventFilter: {e}')
-
-
-class TextEdit(QTextEdit):
-    def __int__(self, parent):
-        super().__init__()
-        self.parent = parent
-        self.logger = logging.getLogger(__name__)
-
-    def keyPressEvent(self, event):
-        self.logger.info("KeyPressEvent is triggered.")
-        if self.hasFocus():
-            if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-                cursor = self.textCursor()
-                cursor.clearSelection()
-                cursor.deletePreviousChar()
-                if self.toPlainText() != "":
-                    self.parent.dealMessage()
