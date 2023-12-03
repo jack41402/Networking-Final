@@ -16,110 +16,104 @@ import threading
 
 # for handling audio record and play
 class AudioUtils:
-	CHANNEL = 1
-	CHUNK = 1024
-	RATE = 44100
-	FORMAT = pyaudio.paInt16
+    CHANNEL = 1
+    CHUNK = 1024
+    RATE = 44100
+    FORMAT = pyaudio.paInt16
 
-	def __init__(self):
-		self.thread = threading.Thread(target=self.__record)
-		self.halt_recording = threading.Event()
-		self.logger = logging.getLogger(__name__)
-		self.audio = pyaudio.PyAudio()
-		self.tempfile = None # temporary file to save the recorded wav audio
-		self.frames = [] # audio frame
-		self.stream = None
+    def __init__(self):
+        self.thread = threading.Thread(target=self.__record)
+        self.halt_recording = threading.Event()
+        self.logger = logging.getLogger(__name__)
+        self.audio = pyaudio.PyAudio()
+        self.tempfile = None  # temporary file to save the recorded wav audio
+        self.frames = []  # audio frame
+        self.stream = None
 
+    # audio recording thread worker
+    def __record(self):
+        while not self.halt_recording.is_set():
+            data = self.stream.read(1024)
+            self.frames.append(data)
+        return
 
-	# audio recording thread worker
-	def __record(self):
-		while not self.halt_recording.is_set():
-			data = self.stream.read(1024)
-			self.frames.append(data)
-		return
+    # start the audio record
+    def start_record(self):
+        # create audio stream
+        self.stream = self.audio.open(format=self.FORMAT, channels=self.CHANNEL,
+                                      rate=self.RATE, input=True,
+                                      frames_per_buffer=self.CHUNK)
 
+        # start the record thread
+        self.logger.info("Now starting the AudioUtils record thread.")
+        self.thread.start()
+        return
 
-	# start the audio record
-	def start_record(self):
-		# create audio stream
-		self.stream = self.audio.open(format=self.FORMAT, channels=self.CHANNEL,
-								 rate=self.RATE, input=True,
-								 frames_per_buffer=self.CHUNK)
+    # stop the audio record
+    def stop_record(self):
+        self.halt_recording.set()
 
-		# start the record thread
-		self.logger.info("Now starting the AudioUtils record thread.")
-		self.thread.start()
-		return
+        # wait for the subthread to terminate completely
+        self.logger.info("Waiting for the audio thread worker to join")
+        self.thread.join()
+        self.logger.info("Audio thread worker joined main thread !!")
 
+        # save to file
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temporary:
+            with wave.open(temporary, 'wb') as file:
+                file.setnchannels(self.CHANNEL)
+                file.setsampwidth(self.audio.get_sample_size(self.FORMAT))
+                file.setframerate(self.RATE)
+                file.writeframes(b''.join(self.frames))
 
-	# stop the audio record
-	def stop_record(self):
-		self.halt_recording.set()
+            # log filename
+            self.tempfile = temporary.name
+            self.logger.info("Successfully saved the recorded audio as: {}".format(self.tempfile))
 
-		# wait for the subthread to terminate completely
-		self.logger.info("Waiting for the audio thread worker to join")
-		self.thread.join()
-		self.logger.info("Audio thread worker joined main thread !!")
-
-		# save to file
-		with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temporary:
-			with wave.open(temporary, 'wb') as file:
-				file.setnchannels(self.CHANNEL)
-				file.setsampwidth(self.audio.get_sample_size(self.FORMAT))
-				file.setframerate(self.RATE)
-				file.writeframes(b''.join(self.frames))
-
-			# log filename
-			self.tempfile = temporary.name
-			self.logger.info("Successfully saved the recorded audio as: {}".format(self.tempfile))
-
-		return
-
+        return
 
     # play the voice record by file
-	def play(self, filename):
-		# open wave file
-		self.logger.info(f"Trying to play wav file: {filename}")
-		wf = wave.open(filename, 'rb')
+    def play(self, filename):
+        # open wave file
+        self.logger.info(f"Trying to play wav file: {filename}")
+        wf = wave.open(filename, 'rb')
 
-		# Open a stream to play audio
-		stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
-								 channels=wf.getnchannels(),
-                    			 rate=wf.getframerate(),
-                    			 output=True)
+        # Open a stream to play audio
+        stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+                                 channels=wf.getnchannels(),
+                                 rate=wf.getframerate(),
+                                 output=True)
 
-    	# Read data in chunks and play
-		data = wf.readframes(self.CHUNK)
-		while data:
-			stream.write(data)
-			data = wf.readframes(self.CHUNK)
+        # Read data in chunks and play
+        data = wf.readframes(self.CHUNK)
+        while data:
+            stream.write(data)
+            data = wf.readframes(self.CHUNK)
 
-		# Close the stream and PyAudio instance
-		stream.stop_stream()
-		stream.close()
-		self.audio.terminate()
-
+        # Close the stream and PyAudio instance
+        stream.stop_stream()
+        stream.close()
+        self.audio.terminate()
 
 
 # for handling transfering the audio to server
 class AudioTransmit:
-	def __init__(self):
-		pass
-
+    def __init__(self):
+        pass
 
 
 if __name__ == "__main__":
-	logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO)
 
-	# try record audio
-	instance = AudioUtils()
-	instance.start_record()
-	time.sleep(3)
-	instance.stop_record()
+    # try record audio
+    instance = AudioUtils()
+    instance.start_record()
+    time.sleep(3)
+    instance.stop_record()
 
-	# try play audio
-	instance.play(instance.tempfile)
+    # try play audio
+    instance.play(instance.tempfile)
 
-	# now clean up manually
-	while not instance.tempfile:
-		os.remove(instance.tempfile)
+    # now clean up manually
+    while not instance.tempfile:
+        os.remove(instance.tempfile)
