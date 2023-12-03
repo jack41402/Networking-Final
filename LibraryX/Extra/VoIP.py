@@ -69,8 +69,8 @@ class VoIP(QWidget):
         self.logger.info(f"Incoming call from: {caller_info}")
 
         # parse data
-        dialer_ip, dialer_listen_port = dialer_detail.split(':')
-        return pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
+        dialer_ip, dialer_listen_port = caller_info.split(':')
+        return self.pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
 
     # audio send thread worker
     def __audio_send(self):
@@ -126,7 +126,7 @@ class VoIP(QWidget):
         self.logger.info(f"Started the ringtone server on port: {self.ringtone_port}")
 
         # register out ringtone port to forum server
-        self.database.insert_info("directory", {"user_id": , "ip": self.local_ip, "port": self.ringtone_port})
+
         return
 
     # double connection to establish phone call

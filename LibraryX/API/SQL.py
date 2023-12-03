@@ -54,10 +54,15 @@ class SQL:
                     self.command(command, (info["username"], info["password"]))
                     logger.info("Insert into user_information successfully.")
                 case "friend":
-                    command = "INSERT INTO friend(user_id, friend_id) VALUES(%s, %s)"
-                    self.command(command, (info["user_id"], info["friend_id"]))
-                    self.command(command, (info["friend_id"], info["user_id"]))
-                    logger.info("Insert into friend successfully.")
+                    if info["status"] == 'R':
+                        command = "INSERT INTO friend(user_id, friend_id, status) VALUES(%s, %s, %s)"
+                        self.command(command, (info["user_id"], info["friend_id"], info["status"]))
+                        logger.info(f"Insert status {info['status']} into friend successfully.")
+                    else:
+                        command = "INSERT INTO friend(user_id, friend_id) VALUES(%s, %s)"
+                        self.command(command, (info["user_id"], info["friend_id"]))
+                        self.command(command, (info["friend_id"], info["user_id"]))
+                        logger.info("Insert into friend successfully.")
                 case "comment":
                     command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
                     self.command(command, (info["content"], info["is_file"], info["author_id"], info["reply_id"]))
@@ -93,7 +98,7 @@ class SQL:
         except Exception as e:
             logger.error(f'Other exception in SQL.find_friend: {e}')
 
-    def find_friend(self, user_id, friend_id):
+    def get_friend_status(self, user_id, friend_id):
         try:
             command = '''SELECT * FROM friend WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
             user_id = str(user_id)
@@ -103,6 +108,40 @@ class SQL:
                 return True
             else:
                 return False
+        except Exception as e:
+            logger.error(f'Other exception in SQL.get_friend_status: {e}')
+
+    def get_friend_info(self, user_id, friend_id):
+        try:
+            command = '''SELECT * FROM friend WHERE user_id=%s AND friend_id=%s'''
+            user_id = str(user_id)
+            friend_id = str(friend_id)
+            result = self.command(command, (user_id, friend_id))
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.get_friend_info: {e}')
+
+    def find_friend(self, user_id, username):
+        try:
+            result = []
+            command = '''SELECT * FROM user_information WHERE LOCATE("%s", username)'''
+            user_id = str(user_id)
+            username = str(username)
+            command %= username
+            users = self.command(command, ())
+            for user in users:
+                friend_id = str(user[0])
+                if user_id != friend_id:
+                    command = '''SELECT * FROM friend WHERE user_id=%s AND friend_id=%s'''
+                    command %= user_id, friend_id
+                    row = self.command(command, ())
+                    if row:
+                        row = row[0]
+                        if row[2] == 'R':
+                            result.append(user)
+                    else:
+                        result.append(user)
+            return tuple(result)
         except Exception as e:
             logger.error(f'Other exception in SQL.find_friend: {e}')
 
@@ -135,8 +174,6 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.get_table: {e}')
-<<<<<<< Updated upstream
-=======
 
     def update_friend(self, key, value, user_id, friend_id):
         try:
@@ -181,4 +218,4 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.delete_info: {e}')
->>>>>>> Stashed changes
+

@@ -62,8 +62,12 @@ class Server:
             self.server.register_function(self.send_file, "send_file")
             self.server.register_function(self.insert_directory, "insert_directory")
             self.server.register_function(self.find_directory, "find_directory")
+            self.server.register_function(self.find_friend, "find_friend")
+            self.server.register_function(self.send_friend_request, "send_friend_request")
+            self.server.register_function(self.find_friend_request, "find_friend_request")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
-                        "find_username, receive_file, send_file, insert_directory, and find_directory "
+                        "find_username, receive_file, send_file, insert_directory, find_directory, find_friend, "
+                        "send_friend_request, and find_friend_request"
                         "have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
@@ -241,6 +245,29 @@ class Server:
             return user_id, (ip, port)
         except Exception as e:
             logger.error(f'Other exception in server.find_directory: {e}')
+
+    def find_friend(self, user_id, username):
+        return self.database.find_friend(user_id, username)
+
+    def send_friend_request(self, user_id, friend_id, status):
+        try:
+            result = self.database.get_friend_info(user_id, friend_id)
+            if result:
+                result = result[0]
+                return self.database.update_friend("status", status, user_id, friend_id)
+            else:
+                self.database.insert_info("friend", {"user_id": user_id, "friend_id": friend_id, "status": status})
+        except Exception as e:
+            logger.error(f'Other exception in server.friend_request: {e}')
+
+    def find_friend_request(self, user_id):
+        return self.database.find_friend_request(user_id)
+
+    def register_directory(self, user_id, ip, port):
+        try:
+            self.database.insert_info("directory", {"user_id":, "ip": self.local_ip, "port": self.ringtone_port})
+        except Exception as e:
+            logger.error(f'Other exception in server.friend_request: {e}')
 
     def close(self):
         pass
