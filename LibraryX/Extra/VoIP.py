@@ -85,8 +85,8 @@ class VoIP:
 	# audio receive thread worker
 	def __audio_receive(self):
 		with self.audio.open(format=self.FORMAT, channels=self.CHANNEL, rate=self.RATE, output=True, frames_per_buffer=self.CHUNK) as stream:
-            while not self.is_hangup.is_emit():
-				data = listen_socket.receive(0.2, autoparse=False)[1]
+            		while not self.is_hangup.is_emit():
+				data = self.listen_socket.receive(0.2, autoparse=False)[1]
 
 				# check if timeout
 				if data:
