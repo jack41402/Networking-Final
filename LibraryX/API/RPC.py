@@ -3,6 +3,7 @@
 # Name: 周嘉禾
 
 import logging
+import re
 import xmlrpc.client
 import datetime
 import threading
@@ -102,10 +103,11 @@ class Client(threading.Thread):
     def send_file(self, file_path):
         try:
             self.logger.info(f"File path: {file_path}")
+            filename = re.split(r"\\", file_path)[-1]
             with open(file_path, 'rb') as file:
                 file_content = file.read()
                 self.logger.info(f"File content: {file_content}")
-                self.proxy.receive_file(xmlrpc.client.Binary(file_content))
+                self.proxy.receive_file(filename, xmlrpc.client.Binary(file_content))
         except Exception as e:
             self.logger.error(f'Other exception in RPC.send_file: {e}')
 

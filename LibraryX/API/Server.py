@@ -203,7 +203,7 @@ class Server:
         try:
             file_type = re.split("[\\\.]", filename)[-1]
             file_info = self.database.find_info("comment", "content", filename)[-1]
-            server_filename = str(file_info[0] + '.' + file_type)
+            server_filename = str(str(file_info[0]) + '.' + file_type)
             file_path = os.path.join(main_path, server_filename)
             logger.info(
                 f"Server filename: {server_filename}, File type: {file_type}, File info: {file_info}, File path: {file_path}")
@@ -219,7 +219,7 @@ class Server:
             file_info = self.database.find_info("comment", "comment_id", file_id)[0]
             filename = file_info[1]
             file_type = re.split("[\\\.]", filename)[-1]
-            server_filename = str(file_info[0] + '.' + file_type)
+            server_filename = str(str(file_info[0]) + '.' + file_type)
             file_path = os.path.join(main_path, server_filename)
             with open(file_path, 'rb') as file:
                 file_content = file.read()

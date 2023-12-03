@@ -92,16 +92,17 @@ class HomePanel(QWidget):
         try:
             self.logger.info("User trying to embed an external file to the message")
             if self.current_item is not None:
-                filename, filetype = QFileDialog.getOpenFileNames()
-                self.logger.info(f"Open filename {filename}, filetype {filetype}.")
+                filenames, filetype = QFileDialog.getOpenFileNames()
+                self.logger.info(f"Open filename {filenames}, filetype {filetype}.")
                 author = self.api.username
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
                 reply_id = friend["user_id"]
 
-                for content in filename:
-                    content = re.split(r"\\", content)[-1]
+                for filename in filenames:
+                    content = re.split(r"\\", filename)[-1]
+                    print(content)
                     self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
-                    self.api.send_file(content)
+                    self.api.send_file(filename)
                 self.render_message(self.current_item)
                 return True
             else:
