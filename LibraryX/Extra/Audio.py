@@ -21,15 +21,22 @@ class AudioUtils:
 	RATE = 44100
 	FORMAT = pyaudio.paInt16
 
-	def __init__(self, api):
-		self.thread = threading.Thread(target=self.record)
+	def __init__(self):
+		self.thread = threading.Thread(target=self.__record)
 		self.halt_recording = threading.Event()
 		self.logger = logging.getLogger(__name__)
 		self.audio = pyaudio.PyAudio()
 		self.tempfile = None # temporary file to save the recorded wav audio
-		self.api = api # xmlrpc client api
 		self.frames = [] # audio frame
 		self.stream = None
+
+
+	# audio recording thread worker
+	def __record(self):
+		while not self.halt_recording.is_set():
+			data = self.stream.read(1024)
+			self.frames.append(data)
+		return
 
 
 	# start the audio record
@@ -69,14 +76,6 @@ class AudioUtils:
 		return
 
 
-	# audio recording thread worker
-	def record(self):
-		while not self.halt_recording.is_set():
-			data = self.stream.read(1024)
-			self.frames.append(data)
-		return
-
-
     # play the voice record by file
 	def play(self, filename):
 		# open wave file
@@ -113,7 +112,7 @@ if __name__ == "__main__":
 	logging.basicConfig(level=logging.INFO)
 
 	# try record audio
-	instance = AudioUtils(None)
+	instance = AudioUtils()
 	instance.start_record()
 	time.sleep(3)
 	instance.stop_record()

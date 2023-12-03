@@ -9,10 +9,10 @@ import logging
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from LibraryX.GUI import Login, Register, Home
-from LibraryX.API import RPC, server
+from LibraryX.API import RPC, Server
 
 SERVER_IP = "127.0.0.1"
-SERVER_PORT = 6666
+SERVER_PORT = 6667 # for debug
 
 # DESC: The all-in-one class that handles everything
 class MainWindow(QMainWindow):
@@ -73,7 +73,7 @@ def main():
         format='[%(levelname)s] - %(message)s (%(name)s / %(funcName)s:%(lineno)d)',
     )
 
-    RPC_server = server.Server(SERVER_IP, SERVER_PORT)
+    RPC_server = Server.Server(SERVER_IP, SERVER_PORT)
     RPC_server.start()
 
     # start application

@@ -3,12 +3,14 @@
 #
 # @All right reserved
 # DESC: Final Project
+
 import datetime
 import logging
 from PyQt6 import QtGui
 from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.uic import loadUi
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidgetItem, QTextEdit
+from LibraryX.Extra import Audio
 from LibraryX.GUI import Comment
 
 
@@ -20,7 +22,10 @@ class HomePanel(QWidget):
         self.api = api
         self.current_item = None
         self.logger = logging.getLogger(__name__)
-        self.api = api
+        self.audio_agent = Audio.AudioUtils() # epic audio recording agent
+        self.temporary_received_audiofile = None # temporary received audio file from friend
+        self.temporary_recored_audiofile = None # temporary self recorded audio file
+        self.audio_recording = False # audio recording status
 
         # connect signal
         self.Setting_Button.clicked.connect(self.goto_setting)
@@ -29,19 +34,39 @@ class HomePanel(QWidget):
         self.VoiceCall_Button.clicked.connect(self.voice_call)
         self.VideoCall_Button.clicked.connect(self.video_call)
         self.Friend_listWidget.itemClicked.connect(self.render_message)
+        self.AudioRecord_Button.clicked.connect(self.record_audio_message)
 
         # Widget setup
         self.Comment_textEdit.installEventFilter(self)
         self.scroll_area_widget = None
         self.scroll_area_layout = None
 
-    # adding a custom msg entry into the scrowarea
-    def __add_message(self, author, message, timestamp):
-    	return
-
     # maybe implement a user setting panel if we have time
     def goto_setting(self):
         return
+
+    # start record an audio message
+    def record_audio_message(self):
+    	if not (self.audio_recording): # if not recording now, start recording
+    		self.audio_recording = True
+    		self.audio_agent.start_record()
+
+    		# change the text on audio icon
+    		self.AudioRecord_Button.setText("Stop\nRecord")
+    		return
+
+    	else: # if recording now, stop recoridng
+    		self.audio_recording = False
+    		self.audio_agent.stop_record()
+
+    		# save the audio filepath to attribute for further sending
+    		self.temporary_recored_audiofile = self.audio_agent.tempfile
+    		self.AudioRecord_Button.setText("Audio\nRecord")
+    		return
+
+    # play an received audio message
+    def play_audio_message(self):
+    	return
 
     # embed a file to message in order to send to the receiver
     def embed_file(self):
@@ -52,7 +77,7 @@ class HomePanel(QWidget):
         # then send that file via binary to the receiver
         return
 
-    # send the message to server
+    # send the text message to server
     def send_message(self):
         try:
             self.logger.info("Trying to send the message to server")
@@ -72,6 +97,10 @@ class HomePanel(QWidget):
                 return False
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_message: {e}')
+
+    # send the audio messge to server
+    def send_audio_message(self, audio_filepath):
+    	return
 
     # re-render all the msg in a chat
     def render_message(self, item):
@@ -119,10 +148,11 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
 
-    # 
+    # render friend list
     def friend_list(self):
         try:
             friends = self.api.get_friend(self.api.user_id)
+            self.logger.info(f"Friend List: {friends}")
             if friends is not None:
                 for friend in friends:
                     item = QListWidgetItem(friend["username"])
@@ -130,6 +160,7 @@ class HomePanel(QWidget):
                     item.setFont(QtGui.QFont("Arial", 12))  # Set font and size
                     item.setSizeHint(QSize(100, 25))
                     self.Friend_listWidget.addItem(item)
+
         except Exception as e:
             self.logger.error(f'Other exception in Home.friend_list: {e}')
 
@@ -147,6 +178,7 @@ class HomePanel(QWidget):
         # I have no idea of the implmentation of this too
         return
 
+    # wtf
     def eventFilter(self, obj, event):
         try:
             if event.type() == QEvent.Type.KeyPress and obj is self.Comment_textEdit:
