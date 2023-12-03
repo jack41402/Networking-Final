@@ -203,8 +203,8 @@ class VoIP:
         self.is_hangup.emit()
 
         # join the two thread of listen and sending audio
-        self.logger("Waiting for audio listening & sending thread join main thread")
+        self.logger.info("Waiting for audio listening & sending thread join main thread")
         self.speak_thread.join()
         self.listen_thread.join()
-        self.logger("Audio listening & sending thread joined elegently")
+        self.logger.info("Audio listening & sending thread joined elegently")
         return
