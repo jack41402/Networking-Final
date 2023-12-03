@@ -39,7 +39,7 @@ class VoIP:
     def __ringtone_detector(self, callback_func):
         # if got incoming call, trigger function call to _ringtone_callback()
         # pass data (caller_ip, caller_listen_port)
-        self.ringtone_socket = TCP_Networking.SimpleServer('0.0.0.0', self.ringtone_port)
+        self.ringtone_socket = TCP_Networking.SimpleServer('0.0.0.0', self.ringtone_port, 5)
         self.ringtone_socket.start()
 
         while True:
