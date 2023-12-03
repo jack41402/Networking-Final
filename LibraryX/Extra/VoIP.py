@@ -78,7 +78,7 @@ class VoIP:
 				data = stream.read(self.CHUNK)
 				self.speak_socket.send(data)
 
-		self.logger("received hangup signal in the audio sending thread")
+		self.logger.info("received hangup signal in the audio sending thread")
 		return
 
 
@@ -92,7 +92,7 @@ class VoIP:
 				if data:
 					stream.write(data)
 
-		self.logger("received hangup signal in the audio receving thread")
+		self.logger.info("received hangup signal in the audio receving thread")
         	return
 
 
