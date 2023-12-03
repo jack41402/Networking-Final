@@ -7,9 +7,9 @@
 import datetime
 import logging
 from PyQt6 import QtGui
-from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.uic import loadUi
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidgetItem, QTextEdit
+from PyQt6.QtCore import Qt, QSize, QEvent
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem
 from LibraryX.Extra import Audio
 from LibraryX.GUI import Comment
 
@@ -40,6 +40,23 @@ class HomePanel(QWidget):
         self.Comment_textEdit.installEventFilter(self)
         self.scroll_area_widget = None
         self.scroll_area_layout = None
+
+
+    # Popup an messgae box with only "OK option"
+    def pop_okmessagebox(self, banner, title, text):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(banner)
+        msg_box.setText(title)
+        msg_box.setInformativeText(text)
+        msg_box.setIcon(QMessageBox.Icon.Information)  # Set an icon
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+        # Adjusting the size using QSpacerItem
+        spacer = QSpacerItem(200, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout = msg_box.layout()
+        layout.addItem(spacer, layout.rowCount(), 0, 1, layout.columnCount())
+        msg_box.exec()
+        return
 
     # maybe implement a user setting panel if we have time
     def goto_setting(self):
