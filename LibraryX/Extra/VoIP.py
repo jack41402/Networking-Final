@@ -11,16 +11,18 @@ import socket
 import logging
 import threading
 from LibraryX.Utils import TCP_Networking, UDP_Networking, Encode
+from PyQt6.QtWidgets import QWidget, QMessageBox, QSpacerItem, QSizePolicy
 
 
 # This is a self designed VoIP-like module, using UDP to handle data transmit
-class VoIP:
+class VoIP(QWidget):
     FORMAT = pyaudio.paInt16
     CHANNEL = 1
     RATE = 44100
     CHUNK = 1024
 
     def __init__(self, local_ip):
+        super().__init__()
         self.logger = logging.getLogger(__name__)
         self.audio = pyaudio.PyAudio()
         self.is_hangup = threading.Event()  # phone call hangup event
@@ -50,7 +52,7 @@ class VoIP:
             dialer_ip, dialer_listen_port = dialer_detail.split(':')
 
             # trigger the callback to ask if answer or not
-            status = callback_func(dialer_detail[1])
+            status = callback_func(dialer_detail)
 
             # check what the callback function returned
             if (status):
@@ -65,8 +67,8 @@ class VoIP:
         self.logger.info(f"Incoming call from: {caller_info}")
 
         # parse data
-        self.logger.info("Set to auto accept call")
-        return True
+        dialer_ip, dialer_listen_port = dialer_detail.split(':')
+        return pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
 
     # audio send thread worker
     def __audio_send(self):
@@ -91,6 +93,29 @@ class VoIP:
         self.logger.info("received hangup signal in the audio receiving thread")
         return
 
+    # Popup a yes/no message box with "Yes / No" option, return True when Yes, False when No
+    def pop_yesnomessagebox(self, banner, title, text):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(banner)
+        msg_box.setText(title)
+        msg_box.setInformativeText(text)
+        msg_box.setIcon(QMessageBox.Icon.Information)  # Set an icon
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        # Adjusting the size using QSpacerItem
+        spacer = QSpacerItem(200, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout = msg_box.layout()
+        layout.addItem(spacer, layout.rowCount(), 0, 1, layout.columnCount())
+
+        result = msg_box.exec()
+        if result == QMessageBox.StandardButton.Yes:
+            self.logger.info("User pressed True")
+            return True
+
+        elif result == QMessageBox.StandardButton.No:
+            self.logger.info("User pressed False")
+            return False
+
     # auto obtain one port as the listening port, and return (IP, Listen_Port) to user
     def setup(self):
         # start local non-stop incoming call checking thread, worker: __ringtone_detector / args: _ringtone_callback
@@ -98,7 +123,7 @@ class VoIP:
         self.ringtone_thread.start()
         self.logger.info(f"Started the ringtone server on port: {self.ringtone_port}")
 
-        # register out ringtone port to forum server
+        # register out ringtone ip port to forum server
         return
 
     # double connection to establish phone call
