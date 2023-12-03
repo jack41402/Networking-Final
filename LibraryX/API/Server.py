@@ -60,8 +60,11 @@ class Server:
             self.server.register_function(self.find_username, "find_username")
             self.server.register_function(self.receive_file, "receive_file")
             self.server.register_function(self.send_file, "send_file")
+            self.server.register_function(self.insert_directory, "insert_directory")
+            self.server.register_function(self.find_directory, "find_directory")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
-                        "find_username, receive_file, and send_file have been registered.")
+                        "find_username, receive_file, send_file, insert_directory, and find_directory "
+                        "have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
 
@@ -224,6 +227,20 @@ class Server:
             return file_content_base64
         except Exception as e:
             logger.error(f'Other exception in server.delete: {e}')
+
+    def insert_directory(self, user_id, ip, port):
+        try:
+            return self.database.insert_info("voice_call", {"user_id": user_id, "ip": ip, "port": port})
+        except Exception as e:
+            logger.error(f'Other exception in server.insert_directory: {e}')
+
+    def find_directory(self, user_id):
+        try:
+            result = self.database.find_info("voice_call", "user_id", user_id)
+            user_id, ip, port = result[0]
+            return user_id, (ip, port)
+        except Exception as e:
+            logger.error(f'Other exception in server.find_directory: {e}')
 
     def close(self):
         pass

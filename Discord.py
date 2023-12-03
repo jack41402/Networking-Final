@@ -61,6 +61,7 @@ class MainWindow(QMainWindow):
     # page flip
     def goto_home(self):
         self.__swicth_panel(self.home_panel, (1000, 600))
+        self.api.insert_directory(self.api.user_id)
         self.home_panel.friend_list()
         self.home_panel.Username_label.setText(self.api.username)
         return

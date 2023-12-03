@@ -109,5 +109,13 @@ class Client(threading.Thread):
         except Exception as e:
             self.logger.error(f'Other exception in RPC.send_file: {e}')
 
+    def insert_directory(self):
+        return self.proxy.insert_directory(self.user_id, self.ip, self.port)
+
+    def find_directory(self, user_id):
+        user_id, (ip, port) = self.proxy.find_directory(user_id)
+        return user_id, (ip, port)
+
     def close(self):
-        pass
+        self.proxy.delete("voice_call", "user_id", self.user_id)
+        self.close()
