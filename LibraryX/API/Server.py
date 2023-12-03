@@ -13,6 +13,8 @@ import threading
 
 logger = logging.getLogger(__name__)
 main_path = r"./File/server"
+SERVER_IP = "127.0.0.1"
+SERVER_PORT = 6666
 
 
 class ThreadXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
@@ -27,16 +29,18 @@ class Server:
         self.lock = threading.Lock()
         self.database = SQL.SQL()
         self.thread = threading.Thread(target=self.run)
-        self.thread.daemon = True
 
     def start(self):
         self.thread.start()
         return
 
     def run(self):
-        self.connection()
-        self.function_registry()
-        self.server.serve_forever()
+        try:
+            self.connection()
+            self.function_registry()
+            self.server.serve_forever()
+        except Exception as e:
+            logger.error(f'Other exception in server.run: {e}')
 
     def connection(self):
         try:
@@ -60,10 +64,15 @@ class Server:
             self.server.register_function(self.find_username, "find_username")
             self.server.register_function(self.receive_file, "receive_file")
             self.server.register_function(self.send_file, "send_file")
-            self.server.register_function(self.insert_directory, "insert_directory")
+            self.server.register_function(self.find_friend, "find_friend")
+            self.server.register_function(self.send_friend_request, "send_friend_request")
+            self.server.register_function(self.find_friend_request, "find_friend_request")
+            self.server.register_function(self.register_directory, "register_directory")
             self.server.register_function(self.find_directory, "find_directory")
+            self.server.register_function(self.delete_directory, "delete_directory")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
-                        "find_username, receive_file, send_file, insert_directory, and find_directory "
+                        "find_username, receive_file, send_file, find_friend, send_friend_request, find_friend_request, "
+                        "register_directory, find_directory, and delete_directory "
                         "have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
@@ -242,5 +251,45 @@ class Server:
         except Exception as e:
             logger.error(f'Other exception in server.find_directory: {e}')
 
+    def find_friend(self, user_id, username):
+        return self.database.find_friend(user_id, username)
+
+    def send_friend_request(self, user_id, friend_id, status):
+        try:
+            result = self.database.get_friend_info(user_id, friend_id)
+            if result:
+                result = result[0]
+                return self.database.update_friend("status", status, user_id, friend_id)
+            else:
+                self.database.insert_info("friend", {"user_id": user_id, "friend_id": friend_id, "status": status})
+        except Exception as e:
+            logger.error(f'Other exception in server.friend_request: {e}')
+
+    def find_friend_request(self, user_id):
+        return self.database.find_friend_request(user_id)
+
+    def register_directory(self, user_id, ip, port):
+        try:
+            return self.database.insert_info("directory", {"user_id": user_id, "ip": ip, "port": port})
+        except Exception as e:
+            logger.error(f'Other exception in server.register_directory: {e}')
+
+    def find_directory(self, user_id):
+        try:
+            return self.database.find_directory(user_id)
+        except Exception as e:
+            logger.error(f'Other exception in server.find_directory: {e}')
+
+    def delete_directory(self, user_id):
+        try:
+            return self.database.delete_directory(user_id)
+        except Exception as e:
+            logger.error(f'Other exception in server.delete_directory: {e}')
+
     def close(self):
         pass
+
+
+if __name__ == "__main__":
+    RPC_server = Server(SERVER_IP, SERVER_PORT)
+    RPC_server.start()

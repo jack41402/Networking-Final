@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
         self.__swicth_panel(self.home_panel, (1000, 600))
         # self.api.insert_directory()
         self.home_panel.friend_list()
+        self.home_panel.voip.setup()
         self.home_panel.Username_label.setText(self.api.username)
         return
 
@@ -73,9 +74,6 @@ def main():
         level=logging.INFO,
         format='[%(levelname)s] - %(message)s (%(name)s / %(funcName)s:%(lineno)d)',
     )
-
-    RPC_server = Server.Server(SERVER_IP, SERVER_PORT)
-    RPC_server.start()
 
     # start application
     app = QApplication([])

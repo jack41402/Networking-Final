@@ -1,4 +1,3 @@
-import os
 import MySQLdb
 import yaml
 import logging
@@ -13,7 +12,7 @@ class SQL:
 
     def connection(self):
         try:
-            with open("./LibraryX/API/config.yaml", 'r') as stream:
+            with open("./config.yaml", 'r') as stream:
                 config = yaml.load(stream, Loader=yaml.FullLoader)
         except FileNotFoundError:
             logger.error("FILE config.yaml NOT FOUND.")
@@ -54,10 +53,9 @@ class SQL:
                     self.command(command, (info["username"], info["password"]))
                     logger.info("Insert into user_information successfully.")
                 case "friend":
-                    command = "INSERT INTO friend(user_id, friend_id) VALUES(%s, %s)"
-                    self.command(command, (info["user_id"], info["friend_id"]))
-                    self.command(command, (info["friend_id"], info["user_id"]))
-                    logger.info("Insert into friend successfully.")
+                    command = "INSERT INTO friend(user_id, friend_id, status) VALUES(%s, %s, %s)"
+                    self.command(command, (info["user_id"], info["friend_id"], info["status"]))
+                    logger.info(f"Insert status {info['status']} into friend successfully.")
                 case "comment":
                     command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
                     self.command(command, (info["content"], info["is_file"], info["author_id"], info["reply_id"]))
@@ -65,7 +63,7 @@ class SQL:
                 case "directory":
                     command = "INSERT INTO directory(user_id, ip, port) VALUES(%s, %s, %s)"
                     self.command(command, (info["user_id"], info["ip"], info["port"]))
-                    logger.info("Insert into comment successfully.")
+                    logger.info("Insert into directory successfully.")
                 case _:
                     logger.error(f'''TABLE {table} DOES NOT EXIST.''')
                     return False
@@ -135,12 +133,10 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.get_table: {e}')
-<<<<<<< Updated upstream
-=======
 
     def update_friend(self, key, value, user_id, friend_id):
         try:
-            command = '''UPDATE comment SET %s="%s" WHERE user_id=%s AND friend_id=%s'''
+            command = '''UPDATE friend SET %s="%s" WHERE user_id=%s AND friend_id=%s'''
             user_id = str(user_id)
             friend_id = str(friend_id)
             command %= key, value, user_id, friend_id
@@ -165,9 +161,10 @@ class SQL:
             command = '''SELECT * FROM directory WHERE user_id=%s'''
             user_id = str(user_id)
             result = self.command(command, (user_id,))
+            print(result)
             if result:
                 info = result[0]
-                return info[0], info[1], info[2]
+                return info[2], info[3]
             else:
                 return False
         except Exception as e:
@@ -181,4 +178,3 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.delete_info: {e}')
->>>>>>> Stashed changes

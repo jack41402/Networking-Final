@@ -11,11 +11,12 @@ import re
 import sys
 
 from PyQt6 import QtGui
+from PyQt6.QtGui import QIcon
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
-    QFileDialog, QApplication
-from LibraryX.Extra import Audio
+    QFileDialog, QApplication, QHBoxLayout, QPushButton, QLabel
+from LibraryX.Extra import Audio, VoIP
 from LibraryX.GUI import Comment, File
 
 
@@ -43,8 +44,13 @@ class HomePanel(QWidget):
 
         # Widget setup
         self.Comment_textEdit.installEventFilter(self)
+        self.friend_widget = None
         self.scroll_area_widget = None
         self.scroll_area_layout = None
+
+        # setup the VoIP function
+        self.voip = VoIP.VoIP("127.0.0.1", self.api)  # for local test
+        # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
 
     # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):
@@ -62,9 +68,112 @@ class HomePanel(QWidget):
         msg_box.exec()
         return
 
+    # Popup a yes/no message box with "Yes / No" option, return True when Yes, False when No
+    def pop_yesnomessagebox(self, banner, title, text):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(banner)
+        msg_box.setText(title)
+        msg_box.setInformativeText(text)
+        msg_box.setIcon(QMessageBox.Icon.Information)  # Set an icon
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        # Adjusting the size using QSpacerItem
+        spacer = QSpacerItem(200, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout = msg_box.layout()
+        layout.addItem(spacer, layout.rowCount(), 0, 1, layout.columnCount())
+
+        result = msg_box.exec()
+        if result == QMessageBox.StandardButton.Yes:
+            self.logger.info("User pressed True")
+            return True
+
+        elif result == QMessageBox.StandardButton.No:
+            self.logger.info("User pressed False")
+            return False
+
     # maybe implement a user setting panel if we have time
     def goto_setting(self):
         return
+
+    def search_friend(self):
+        try:
+            username = self.friend_widget.Search_lineEdit.text()
+            self.friend_widget.Search_lineEdit.setText("")
+            result = self.api.find_friend(self.api.user_id, username)
+            self.logger.info(f"Search user {username} results: {result}")
+            for row in result:
+                item = QListWidgetItem(row[1])
+                item.setData(Qt.ItemDataRole.UserRole, row)
+                item.setFont(QtGui.QFont("Arial", 12))  # Set font and size
+                item.setSizeHint(QSize(100, 25))
+                self.friend_widget.Add_Friend_listWidget.addItem(item)
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.search_friend: {e}')
+
+    def accept_friend_request(self):
+        try:
+            button = self.app.sender()
+            friend_id = button.property("user_id")
+            self.api.send_friend_request(self.api.user_id, friend_id, 'A')
+            self.api.send_friend_request(friend_id, self.api.user_id, 'A')
+            self.get_friend_request()
+            self.friend_list()
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.accept_friend_request: {e}')
+
+    def reject_friend_request(self):
+        try:
+            button = self.app.sender()
+            friend_id = button.property("user_id")
+            self.api.send_friend_request(friend_id, self.api.user_id, 'R')
+            self.get_friend_request()
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.reject_friend_request: {e}')
+
+    def get_friend_request(self):
+        try:
+            self.friend_widget.Friend_Request_listWidget.clear()
+            user_request, friend_request = self.api.find_friend_request(self.api.user_id)
+            for request in user_request:
+                friend_info = self.api.find_user_id(request[2])[0]
+                item = QListWidgetItem(f"{friend_info[1]} (Waiting...)")
+                item.setData(Qt.ItemDataRole.UserRole, friend_info)
+                item.setFont(QtGui.QFont("Arial", 12))  # Set font and size
+                item.setSizeHint(QSize(100, 25))
+                self.friend_widget.Friend_Request_listWidget.addItem(item)
+            for request in friend_request:
+                friend_info = self.api.find_user_id(request[1])[0]
+
+                item = QListWidgetItem()
+                item_widget = QWidget()
+                line_text = QLabel(friend_info[1])
+
+                accept_button = QPushButton("Accept")
+                accept_button.setProperty("user_id", friend_info[0])
+                accept_button.clicked.connect(self.accept_friend_request)
+
+                reject_button = QPushButton("Reject")
+                reject_button.setProperty("user_id", friend_info[0])
+                reject_button.clicked.connect(self.reject_friend_request)
+
+                item_layout = QHBoxLayout()
+                item_layout.addWidget(line_text)
+                item_layout.addWidget(accept_button)
+                item_layout.addWidget(reject_button)
+                item_widget.setLayout(item_layout)
+                item.setSizeHint(item_widget.sizeHint())
+                self.friend_widget.Friend_Request_listWidget.addItem(item)
+                self.friend_widget.Friend_Request_listWidget.setItemWidget(item, item_widget)
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.get_friend_request: {e}')
+
+    def send_friend_request(self, item):
+        try:
+            friend = item.data(Qt.ItemDataRole.UserRole)
+            friend_id = friend[0]
+            self.api.send_friend_request(self.api.user_id, friend_id, 'P')
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.send_friend_request: {e}')
 
     # start record an audio message
     def record_audio_message(self):
@@ -160,6 +269,7 @@ class HomePanel(QWidget):
             friend_id = friend["user_id"]
 
             self.ReplyUser_label.setText(friend_name)
+            self.VoiceCall_Button.setProperty("user_id", friend_id)
             self.logger.info("Trying to re-render all message from a chat")
             self.scroll_area_widget = QWidget()
             self.scroll_area_layout = QVBoxLayout()
@@ -212,6 +322,7 @@ class HomePanel(QWidget):
     # render friend list
     def friend_list(self):
         try:
+            self.Friend_listWidget.clear()
             friends = self.api.get_friend(self.api.user_id)
             self.logger.info(f"Friend List: {friends}")
             if friends is not None:
@@ -234,10 +345,18 @@ class HomePanel(QWidget):
 
     # user attempt to make a audio call
     def voice_call(self):
-        self.logger.info("User attempt to make an audio call")
-
-        # I have no idea of the implementation of this too
-        return
+        try:
+            self.logger.info("User attempt to make an audio call")
+            button = self.app.sender()
+            user_id = button.property("user_id")
+            ip, port = self.api.find_directory(user_id)
+            # query server for the receiver IP:ringtong_port
+            # port can only be int
+            self.voip.dial(ip, port)
+            return
+        except Exception as e:
+            print(e.__traceback__.tb_lineno)
+            self.logger.error(f'Other exception in Home.voice_call: {e}')
 
     # bind return and enter key to send button
     def eventFilter(self, obj, event):
