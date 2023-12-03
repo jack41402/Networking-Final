@@ -94,16 +94,18 @@ class Client(threading.Thread):
     def find_username(self, username: str):
         return self.proxy.find_username(username)
 
-    def receive_file(self):
+    def receive_file(self, file_path, file_id):
         try:
-            pass
+            file_content = self.proxy.send_file(file_id)
+            with open(file_path, 'wb') as received_file:
+                received_file.write(file_content.data)
         except Exception as e:
             self.logger.error(f'Other exception in RPC.receive_file: {e}')
 
     def send_file(self, file_path):
         try:
             self.logger.info(f"File path: {file_path}")
-            filename = re.split(r"\\", file_path)[-1]
+            filename = re.split(r"/", file_path)[-1]
             with open(file_path, 'rb') as file:
                 file_content = file.read()
                 self.logger.info(f"File content: {file_content}")

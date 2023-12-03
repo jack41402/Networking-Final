@@ -6,15 +6,17 @@
 
 import datetime
 import logging
+import os.path
 import re
+import sys
 
 from PyQt6 import QtGui
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
-    QFileDialog
+    QFileDialog, QApplication
 from LibraryX.Extra import Audio
-from LibraryX.GUI import Comment,File
+from LibraryX.GUI import Comment, File
 
 
 class HomePanel(QWidget):
@@ -24,6 +26,7 @@ class HomePanel(QWidget):
 
         self.api = api
         self.current_item = None
+        self.app = QApplication(sys.argv)
         self.logger = logging.getLogger(__name__)
         self.audio_agent = Audio.AudioUtils()  # epic audio recording agent
         self.temporary_received_audiofile = None  # temporary received audio file from friend
@@ -33,7 +36,7 @@ class HomePanel(QWidget):
         # connect signal
         self.Setting_Button.clicked.connect(self.goto_setting)
         self.Send_Button.clicked.connect(self.send_message)
-        self.EmbedFile_Button.clicked.connect(self.embed_file)
+        self.EmbedFile_Button.clicked.connect(self.send_file)
         self.VoiceCall_Button.clicked.connect(self.voice_call)
         self.VideoCall_Button.clicked.connect(self.video_call)
         self.Friend_listWidget.itemClicked.connect(self.render_message)
@@ -88,30 +91,44 @@ class HomePanel(QWidget):
         return
 
     # embed a file to message in order to send to the receiver
-    def embed_file(self):
+    def send_file(self):
         try:
             self.logger.info("User trying to embed an external file to the message")
             if self.current_item is not None:
-                filenames, filetype = QFileDialog.getOpenFileNames()
-                self.logger.info(f"Open filename {filenames}, filetype {filetype}.")
+                file_paths, filetype = QFileDialog.getOpenFileNames()
+                self.logger.info(f"Open filename {file_paths}, filetype {filetype}.")
                 author = self.api.username
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
                 reply_id = friend["user_id"]
 
-                for filename in filenames:
-                    content = re.split(r"\\", filename)[-1]
-                    print(content)
-                    self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
-                    self.api.send_file(filename)
+                for file_path in file_paths:
+                    if os.path.exists(file_path):
+                        content = re.split(r"/", file_path)[-1]
+                        self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
+                        self.api.send_file(file_path)
+                    else:
+                        self.logger.error(f"CAN'T FIND FILE PATH OF {file_path}")
                 self.render_message(self.current_item)
                 return True
             else:
                 return False
         except Exception as e:
-            self.logger.error(f'Other exception in Home.embed_file: {e}')
+            self.logger.error(f'Other exception in Home.send_file: {e}')
+
+    # download file from server
+    def receive_file(self):
+        try:
+            file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "All Files (*);;Text Files (*.txt)")
+            if file_path:
+                self.logger.info(f"File path selected: {file_path}")
+                button = self.app.sender()
+                file_id = button.property("comment_id")
+                self.api.receive_file(file_path, file_id)
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.receive_file: {e}')
 
     # send the text message to server
-    def send_message(self):
+    def send_message(self, is_file):
         try:
             self.logger.info("Trying to send the message to server")
             if self.current_item is not None:
@@ -121,7 +138,7 @@ class HomePanel(QWidget):
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
                 reply_id = friend["user_id"]
 
-                self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
+                self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": False})
 
                 self.render_message(self.current_item)
                 return True
@@ -163,14 +180,13 @@ class HomePanel(QWidget):
                 else:
                     comment_time = comment_time.strftime("%Y/%M/%d %H:%M")
 
-
                 if is_file:
                     filename = comment[1]
                     form = File.FilePanel(comment_author, comment_time, filename)
                     font.setPointSize(12)
                     form.File_Button.setFont(font)
                     form.File_Button.setProperty("comment_id", comment_id)
-                    form.File_Button.clicked.connect(self.get_file)
+                    form.File_Button.clicked.connect(self.receive_file)
                 else:
                     comment_content = comment[1]
                     form = Comment.CommentPanel(comment_author, comment_time, comment_content)
@@ -220,16 +236,11 @@ class HomePanel(QWidget):
         # I have no idea of the implementation of this too
         return
 
-    # download file from server
-    def get_file(self, item):
-        pass
-
     # bind return and enter key to send button
     def eventFilter(self, obj, event):
         try:
             if event.type() == QEvent.Type.KeyPress and obj is self.Comment_textEdit:
-                if (
-                        event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter) and self.Comment_textEdit.hasFocus():
+                if (event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter) and self.Comment_textEdit.hasFocus():
                     if self.Comment_textEdit.toPlainText() != "":
                         self.Send_Button.click()
             return super().eventFilter(obj, event)

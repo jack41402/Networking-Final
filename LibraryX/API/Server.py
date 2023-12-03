@@ -201,7 +201,7 @@ class Server:
     # Function to receive and save the file on the server
     def receive_file(self, filename, file_content):
         try:
-            file_type = re.split("[\\\.]", filename)[-1]
+            file_type = re.split(r"\.", filename)[-1]
             file_info = self.database.find_info("comment", "content", filename)[-1]
             server_filename = str(str(file_info[0]) + '.' + file_type)
             file_path = os.path.join(main_path, server_filename)
@@ -230,13 +230,13 @@ class Server:
 
     def insert_directory(self, user_id, ip, port):
         try:
-            return self.database.insert_info("voice_call", {"user_id": user_id, "ip": ip, "port": port})
+            return self.database.insert_info("directory", {"user_id": user_id, "ip": ip, "port": port})
         except Exception as e:
             logger.error(f'Other exception in server.insert_directory: {e}')
 
     def find_directory(self, user_id):
         try:
-            result = self.database.find_info("voice_call", "user_id", user_id)
+            result = self.database.find_info("directory", "user_id", user_id)
             user_id, ip, port = result[0]
             return user_id, (ip, port)
         except Exception as e:

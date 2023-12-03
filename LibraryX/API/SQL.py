@@ -62,8 +62,8 @@ class SQL:
                     command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
                     self.command(command, (info["content"], info["is_file"], info["author_id"], info["reply_id"]))
                     logger.info("Insert into comment successfully.")
-                case "voice_call":
-                    command = "INSERT INTO voice_call(user_id, ip, port) VALUES(%s, %s, %s)"
+                case "directory":
+                    command = "INSERT INTO directory(user_id, ip, port) VALUES(%s, %s, %s)"
                     self.command(command, (info["user_id"], info["ip"], info["port"]))
                     logger.info("Insert into comment successfully.")
                 case _:
