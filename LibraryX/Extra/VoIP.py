@@ -136,8 +136,8 @@ class VoIP:
 		# connect to the receiver's ringtone server
 		self.logger.info(f"Connecting to the receiver's ringtone server on: {remote_ip}:{remote_ringtone_port}")
 		self.client = TCP_Networking.SimpleClient(remote_ip, remote_ringtone_port)
-		self.client.send(f"{local_ip}:{self.local_listen_port}", datatype=Encode.EncodeType.STR)
-		reply[1] = self.client.receive()
+		self.client.send(f"{self.local_ip}:{self.local_listen_port}", datatype=Encode.EncodeType.STR)
+		reply = self.client.receive()[1]
 		self.client.close()
 
 		# determine call status based on reply
