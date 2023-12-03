@@ -75,8 +75,9 @@ class Client(threading.Thread):
             friend_info = []
             friends = self.proxy.friend_list(user_id)
             for friend in friends:
-                info = self.find_user_id(friend[1])[0]
-                friend_info.append({"user_id": info[0], "username": info[1]})
+                if friend[3] == 'A':
+                    info = self.find_user_id(friend[2])[0]
+                    friend_info.append({"user_id": info[0], "username": info[1]})
             return tuple(friend_info)
 
         except Exception as e:
@@ -119,6 +120,18 @@ class Client(threading.Thread):
     def find_directory(self, user_id):
         user_id, (ip, port) = self.proxy.find_directory(user_id)
         return user_id, (ip, port)
+
+    def find_friend(self, user_id, username):
+        return self.proxy.find_friend(user_id, username)
+
+    def send_friend_request(self, user_id, friend, status):
+        return self.proxy.send_friend_request(user_id, friend, status)
+
+    def find_friend_request(self, user_id):
+        return self.proxy.find_friend_request(user_id)
+
+    def friend_list(self, user_id):
+        return self.proxy.friend_list(user_id)
 
     def close(self):
         self.proxy.delete("voice_call", "user_id", self.user_id)

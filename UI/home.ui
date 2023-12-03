@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>600</height>
+    <height>599</height>
    </rect>
   </property>
   <property name="font">
@@ -42,7 +42,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="Setting_Button">
+        <widget class="QPushButton" name="Friend_Button">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -60,8 +60,13 @@
            <family>Arial</family>
           </font>
          </property>
+         <property name="styleSheet">
+          <string notr="true">qproperty-icon: url(friend.png);
+qproperty-iconSize: 15px;
+</string>
+         </property>
          <property name="text">
-          <string>Setting</string>
+          <string>Friend</string>
          </property>
         </widget>
        </item>
@@ -149,7 +154,7 @@
           <x>0</x>
           <y>0</y>
           <width>676</width>
-          <height>437</height>
+          <height>436</height>
          </rect>
         </property>
        </widget>
