@@ -71,7 +71,7 @@ class VoIP:
     # audio send thread worker
     def __audio_send(self):
         stream = self.audio.open(format=self.FORMAT, channels=self.CHANNEL, rate=self.RATE, input=True, frames_per_buffer=self.CHUNK)
-        while not self.is_hangup.is_emit():
+        while not self.is_hangup.is_set():
             data = stream.read(self.CHUNK)
             self.speak_socket.send(data)
 
@@ -81,7 +81,7 @@ class VoIP:
     # audio receive thread worker
     def __audio_receive(self):
         stream = self.audio.open(format=self.FORMAT, channels=self.CHANNEL, rate=self.RATE, output=True, frames_per_buffer=self.CHUNK)
-        while not self.is_hangup.is_emit():
+        while not self.is_hangup.is_set():
             data = self.listen_socket.receive(0.2, autoparse=False)[1]
 
             # check if timeout
@@ -200,7 +200,7 @@ class VoIP:
     # hangup a phone call:
     def hangup(self):
         # setting signal to halt the send and listen audio thread
-        self.is_hangup.emit()
+        self.is_hangup.set()
 
         # join the two thread of listen and sending audio
         self.logger.info("Waiting for audio listening & sending thread join main thread")
