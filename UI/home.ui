@@ -31,6 +31,11 @@
       <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="9,1">
        <item>
         <widget class="QLabel" name="Username_label">
+         <property name="font">
+          <font>
+           <family>Arial</family>
+          </font>
+         </property>
          <property name="text">
           <string>TextLabel</string>
          </property>
@@ -50,6 +55,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+          </font>
+         </property>
          <property name="text">
           <string>Setting</string>
          </property>
@@ -65,7 +75,7 @@
       <number>0</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="3,2,0,0">
+      <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="3,2,0">
        <property name="spacing">
         <number>0</number>
        </property>
@@ -78,7 +88,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Username</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -123,31 +133,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="VideoCall_Button">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Arial</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Video</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
@@ -163,8 +148,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>679</width>
-          <height>441</height>
+          <width>676</width>
+          <height>437</height>
          </rect>
         </property>
        </widget>
@@ -272,6 +257,11 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+          </font>
          </property>
          <property name="text">
           <string>Audio

@@ -123,12 +123,3 @@ class Client(threading.Thread):
     def close(self):
         self.proxy.delete("voice_call", "user_id", self.user_id)
         self.close()
-
-
-# get client port
-class LoggingTransport(xmlrpc.client.Transport):
-    def make_connection(self, host):
-        connection = super().make_connection(host)
-        local_port = connection.sock.getsockname()[1]  # Get local port
-        print(f"Connected to {host} on port {local_port}")
-        return connection

@@ -38,7 +38,6 @@ class HomePanel(QWidget):
         self.Send_Button.clicked.connect(self.send_message)
         self.EmbedFile_Button.clicked.connect(self.send_file)
         self.VoiceCall_Button.clicked.connect(self.voice_call)
-        self.VideoCall_Button.clicked.connect(self.video_call)
         self.Friend_listWidget.itemClicked.connect(self.render_message)
         self.AudioRecord_Button.clicked.connect(self.record_audio_message)
 
@@ -156,13 +155,17 @@ class HomePanel(QWidget):
     def render_message(self, item):
         try:
             self.current_item = item
+            friend = item.data(Qt.ItemDataRole.UserRole)
+            friend_name = friend["username"]
+            friend_id = friend["user_id"]
+
+            self.ReplyUser_label.setText(friend_name)
             self.logger.info("Trying to re-render all message from a chat")
             self.scroll_area_widget = QWidget()
             self.scroll_area_layout = QVBoxLayout()
             self.scroll_area_layout.setSpacing(0)
 
-            friend = item.data(Qt.ItemDataRole.UserRole)
-            comments = self.api.get_comment(self.api.user_id, friend["user_id"])
+            comments = self.api.get_comment(self.api.user_id, friend_id)
             for comment in comments:
                 font = QtGui.QFont()
                 today = datetime.date.today()
