@@ -46,7 +46,7 @@ class VoIP:
 
         while True:
             # create server and start listening for call
-            dialer_detail = self.ringtone_socket.receive()
+            dialer_detail = self.ringtone_socket.receive()[1]
             dialer_ip, dialer_listen_port = dialer_detail.split(':')
 
             # trigger the callback to ask if answer or not
