@@ -11,6 +11,7 @@ import socket
 import logging
 import threading
 from LibraryX.Utils import TCP_Networking, UDP_Networking, Encode
+from LibraryX.API import SQL
 
 
 # This is a self designed VoIP-like module, using UDP to handle data transmit
@@ -36,6 +37,7 @@ class VoIP:
         self.listen_thread = threading.Thread(target=self.__audio_receive)
         self.speak_thread.daemon = True
         self.listen_thread.daemon = True
+        self.database = SQL.SQL()
 
     # non-stop thread worker for checking if got incoming call, trigger callback when got call
     def __ringtone_detector(self, callback_func):
@@ -99,6 +101,7 @@ class VoIP:
         self.logger.info(f"Started the ringtone server on port: {self.ringtone_port}")
 
         # register out ringtone port to forum server
+        self.database.insert_info("directory", {"user_id": , "ip": self.local_ip, "port": self.ringtone_port})
         return
 
     # double connection to establish phone call
