@@ -135,3 +135,50 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.get_table: {e}')
+<<<<<<< Updated upstream
+=======
+
+    def update_friend(self, key, value, user_id, friend_id):
+        try:
+            command = '''UPDATE comment SET %s="%s" WHERE user_id=%s AND friend_id=%s'''
+            user_id = str(user_id)
+            friend_id = str(friend_id)
+            command %= key, value, user_id, friend_id
+            result = self.command(command, ())
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.update_friend: {e}')
+
+    def find_friend_request(self, user_id):
+        try:
+            user_id = str(user_id)
+            command = '''SELECT * FROM friend WHERE user_id=%s AND status="P"'''
+            user_request = self.command(command, (user_id,))
+            command = '''SELECT * FROM friend WHERE friend_id=%s AND status="P"'''
+            friend_request = self.command(command, (user_id,))
+            return user_request, friend_request
+        except Exception as e:
+            logger.error(f'Other exception in SQL.get_friend_status: {e}')
+
+    def find_directory(self, user_id):
+        try:
+            command = '''SELECT * FROM directory WHERE user_id=%s'''
+            user_id = str(user_id)
+            result = self.command(command, (user_id,))
+            if result:
+                info = result[0]
+                return info[0], info[1], info[2]
+            else:
+                return False
+        except Exception as e:
+            logger.error(f'Other exception in SQL.delete_info: {e}')
+
+    def delete_directory(self, user_id):
+        try:
+            command = '''DELETE FROM directory WHERE user_id=%s'''
+            user_id = str(user_id)
+            result = self.command(command, (user_id,))
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.delete_info: {e}')
+>>>>>>> Stashed changes
