@@ -17,7 +17,6 @@ class Server():
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
-        self.server = None
         self.lock = threading.Lock()
         self.database = SQL.SQL()
         self.thread = threading.Thread(target=self.run)
