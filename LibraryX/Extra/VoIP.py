@@ -34,6 +34,8 @@ class VoIP:
         self.ringtone_thread = threading.Thread(target=self.__ringtone_detector, args=(self._ringtone_callback,))
         self.speak_thread = threading.Thread(target=self.__audio_send)
         self.listen_thread = threading.Thread(target=self.__audio_receive)
+        self.speak_thread.daemon = True
+        self.listen_thread.daemon = True
 
     # non-stop thread worker for checking if got incoming call, trigger callback when got call
     def __ringtone_detector(self, callback_func):
