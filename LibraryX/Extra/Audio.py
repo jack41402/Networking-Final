@@ -7,7 +7,6 @@
 import os
 import time
 import wave
-import queue
 import pyaudio
 import logging
 import tempfile
@@ -90,10 +89,12 @@ class AudioUtils:
             stream.write(data)
             data = wf.readframes(self.CHUNK)
 
+
         # Close the stream and PyAudio instance
         stream.stop_stream()
         stream.close()
         self.audio.terminate()
+        return
 
 
 
