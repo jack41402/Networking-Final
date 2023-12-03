@@ -69,7 +69,7 @@ class VoIP(QWidget):
         self.logger.info(f"Incoming call from: {caller_info}")
 
         # parse data
-        dialer_ip, dialer_listen_port = dialer_detail.split(':')
+        dialer_ip, dialer_listen_port = caller_info.split(':')
         return pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
 
     # audio send thread worker
