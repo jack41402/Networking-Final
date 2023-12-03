@@ -133,6 +133,18 @@ class Client(threading.Thread):
     def friend_list(self, user_id):
         return self.proxy.friend_list(user_id)
 
+<<<<<<< HEAD
+=======
+    def register_directory(self, user_id, ip, port):
+        return self.proxy.register_directory(user_id, ip, port)
+
+    def find_directory(self, user_id):
+        return self.proxy.find_directory(user_id)
+
+    def delete_directory(self, user_id):
+        return self.proxy.delete_directory(user_id)
+
+>>>>>>> Voice-call
     def close(self):
-        self.proxy.delete("voice_call", "user_id", self.user_id)
+        self.delete_directory(self.user_id)
         self.close()

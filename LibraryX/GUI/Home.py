@@ -10,13 +10,21 @@ import os.path
 import re
 import sys
 from PyQt6 import QtGui
+from PyQt6.QtGui import QIcon
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent
+<<<<<<< HEAD
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem,
                              QFileDialog, QApplication, QPushButton, QLabel, QHBoxLayout)
 from LibraryX.Extra import Audio, VoIP
 from LibraryX.GUI import Comment, File, Friend
 from LibraryX.Utils import Identify
+=======
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
+    QFileDialog, QApplication, QHBoxLayout, QPushButton, QLabel
+from LibraryX.Extra import Audio, VoIP
+from LibraryX.GUI import Comment, File
+>>>>>>> Voice-call
 
 
 class HomePanel(QWidget):
@@ -49,11 +57,23 @@ class HomePanel(QWidget):
         self.Friend_listWidget.itemClicked.connect(self.render_message)
         self.AudioRecord_Button.clicked.connect(self.record_audio_message)
 
+<<<<<<< HEAD
         # setup the VoIP function
         self.voip = VoIP.VoIP("127.0.0.1") # for local test
         # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
         self.voip.setup()
 
+=======
+        # Widget setup
+        self.Comment_textEdit.installEventFilter(self)
+        self.friend_widget = None
+        self.scroll_area_widget = None
+        self.scroll_area_layout = None
+>>>>>>> Voice-call
+
+        # setup the VoIP function
+        self.voip = VoIP.VoIP("127.0.0.1", self.api)  # for local test
+        # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
 
     # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):
@@ -71,7 +91,10 @@ class HomePanel(QWidget):
         msg_box.exec()
         return
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> Voice-call
     # Popup a yes/no message box with "Yes / No" option, return True when Yes, False when No
     def pop_yesnomessagebox(self, banner, title, text):
         msg_box = QMessageBox(self)
@@ -95,7 +118,10 @@ class HomePanel(QWidget):
             self.logger.info("User pressed False")
             return False
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> Voice-call
     # maybe implement a user setting panel if we have time
     def goto_friend(self):
         self.friend_widget.Add_Friend_listWidget.clear()
@@ -119,6 +145,7 @@ class HomePanel(QWidget):
             self.logger.error(f'Other exception in Home.search_friend: {e}')
 
     def accept_friend_request(self):
+<<<<<<< HEAD
         pass
 
     def reject_friend_request(self):
@@ -126,6 +153,30 @@ class HomePanel(QWidget):
 
     def get_friend_request(self):
         try:
+=======
+        try:
+            button = self.app.sender()
+            friend_id = button.property("user_id")
+            self.api.send_friend_request(self.api.user_id, friend_id, 'A')
+            self.api.send_friend_request(friend_id, self.api.user_id, 'A')
+            self.get_friend_request()
+            self.friend_list()
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.accept_friend_request: {e}')
+
+    def reject_friend_request(self):
+        try:
+            button = self.app.sender()
+            friend_id = button.property("user_id")
+            self.api.send_friend_request(friend_id, self.api.user_id, 'R')
+            self.get_friend_request()
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.reject_friend_request: {e}')
+
+    def get_friend_request(self):
+        try:
+            self.friend_widget.Friend_Request_listWidget.clear()
+>>>>>>> Voice-call
             user_request, friend_request = self.api.find_friend_request(self.api.user_id)
             for request in user_request:
                 friend_info = self.api.find_user_id(request[2])[0]
@@ -267,6 +318,7 @@ class HomePanel(QWidget):
             friend_id = friend["user_id"]
 
             self.ReplyUser_label.setText(friend_name)
+            self.VoiceCall_Button.setProperty("user_id", friend_id)
             self.logger.info("Trying to re-render all message from a chat")
             self.scroll_area_widget = QWidget()
             self.scroll_area_layout = QVBoxLayout()
@@ -320,6 +372,7 @@ class HomePanel(QWidget):
     # render friend list
     def friend_list(self):
         try:
+            self.Friend_listWidget.clear()
             friends = self.api.get_friend(self.api.user_id)
             self.logger.info(f"Friend List: {friends}")
             for friend in friends:
@@ -341,12 +394,27 @@ class HomePanel(QWidget):
 
     # user attempt to make a audio call
     def voice_call(self):
+<<<<<<< HEAD
         self.logger.info("User attempt to make an audio call")
 
         # query server for the receiver IP:ringtong_port
         # port can only be int
         # self.voip.dial()
         return
+=======
+        try:
+            self.logger.info("User attempt to make an audio call")
+            button = self.app.sender()
+            user_id = button.property("user_id")
+            ip, port = self.api.find_directory(user_id)
+            # query server for the receiver IP:ringtong_port
+            # port can only be int
+            self.voip.dial(ip, port)
+            return
+        except Exception as e:
+            print(e.__traceback__.tb_lineno)
+            self.logger.error(f'Other exception in Home.voice_call: {e}')
+>>>>>>> Voice-call
 
     # bind return and enter key to send button
     def eventFilter(self, obj, event):
