@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Chat</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,7">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout" stretch="9,1">
@@ -246,6 +249,9 @@
          </property>
          <property name="text">
           <string>Send</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

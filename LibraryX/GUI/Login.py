@@ -5,7 +5,7 @@
 # DESC: Final Project
 import logging
 from PyQt6.uic import loadUi
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QWidget
 
 
@@ -29,3 +29,7 @@ class LoginPanel(QWidget):
             # you can use login_status to determine the message box
         except Exception as e:
             self.logger.error(f'Other exception in LoginPanel.login: {e}')
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            self.Login_button.click()

@@ -6,9 +6,9 @@
 import datetime
 import logging
 from PyQt6 import QtGui
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.uic import loadUi
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidgetItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListWidgetItem, QTextEdit
 from LibraryX.GUI import Comment
 
 
@@ -16,18 +16,22 @@ class HomePanel(QWidget):
     def __init__(self, api):
         super().__init__()
         loadUi("UI/home.ui", self)
+        
+        self.api = api
+        self.current_item = None
         self.logger = logging.getLogger(__name__)
         self.api = api
 
         # connect signal
         self.Setting_Button.clicked.connect(self.goto_setting)
-        self.Send_Button.clicked.connect(self.post_message)
+        self.Send_Button.clicked.connect(self.send_message)
         self.EmbedFile_Button.clicked.connect(self.embed_file)
         self.VoiceCall_Button.clicked.connect(self.voice_call)
         self.VideoCall_Button.clicked.connect(self.video_call)
         self.Friend_listWidget.itemClicked.connect(self.render_message)
 
         # Widget setup
+        self.Comment_textEdit.installEventFilter(self)
         self.scroll_area_widget = None
         self.scroll_area_layout = None
 
@@ -49,18 +53,30 @@ class HomePanel(QWidget):
         return
 
     # send the message to server
-    def post_message(self):
-        self.logger.info("Trying to post the message to server")
+    def send_message(self):
+        try:
+            self.logger.info("Trying to send the message to server")
+            if self.current_item is not None:
+                author = self.api.username
+                content = self.Comment_textEdit.toPlainText().strip()
+                self.Comment_textEdit.clear()
+                friend = self.current_item.data(Qt.ItemDataRole.UserRole)
+                reply_id = friend["user_id"]
 
-        # make a request to server, sending the data in comment box
+                self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": False})
 
-        # trigger the re-render of previous conversation
-        self.render_message()
-        return
+                self.render_message(self.current_item)
+                return True
+            else:
+                self.logger.error(f'CURRENT ITEM IS NONE.')
+                return False
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.send_message: {e}')
 
     # re-render all the msg in a chat
     def render_message(self, item):
         try:
+            self.current_item = item
             self.logger.info("Trying to re-render all message from a chat")
             self.scroll_area_widget = QWidget()
             self.scroll_area_layout = QVBoxLayout()
@@ -71,17 +87,23 @@ class HomePanel(QWidget):
             for comment in comments:
                 form = loadUi("UI/comment.ui")
                 font = QtGui.QFont()
+                today = datetime.date.today()
+                time_delta = datetime.timedelta(days=1)
 
                 comment_author_id = comment[4]
                 comment_author = self.api.username if comment_author_id == self.api.user_id else friend["username"]
                 comment_content = comment[1]
                 comment_time = datetime.datetime.strptime(str(comment[2]), '%Y%m%dT%H:%M:%S')
-                comment_time = comment_time.strftime("%Y/%m/%d %H:%M")
-                print(type(comment_time))
+                if comment_time.date() == today:
+                    comment_time = comment_time.strftime("Today %H:%M")
+                elif comment_time.date() == today-time_delta:
+                    comment_time = comment_time.strftime("Yesterday %H:%M")
+                else:
+                    comment_time = comment_time.strftime("%Y/%M/%d %H:%M")
 
                 form.Author_label.setText(comment_author)
-                form.Comment_label.setText(comment_content)
                 form.Time_label.setText(comment_time)
+                form.Comment_label.setText(comment_content)
 
                 font.setPointSize(9)
                 form.Comment_label.setFont(font)
@@ -124,3 +146,30 @@ class HomePanel(QWidget):
 
         # I have no idea of the implmentation of this too
         return
+
+    def eventFilter(self, obj, event):
+        try:
+            if event.type() == QEvent.Type.KeyPress and obj is self.Comment_textEdit:
+                if (event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter) and self.Comment_textEdit.hasFocus():
+                    if self.Comment_textEdit.toPlainText() != "":
+                        self.Send_Button.click()
+            return super().eventFilter(obj, event)
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.eventFilter: {e}')
+
+
+class TextEdit(QTextEdit):
+    def __int__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.logger = logging.getLogger(__name__)
+
+    def keyPressEvent(self, event):
+        self.logger.info("KeyPressEvent is triggered.")
+        if self.hasFocus():
+            if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+                cursor = self.textCursor()
+                cursor.clearSelection()
+                cursor.deletePreviousChar()
+                if self.toPlainText() != "":
+                    self.parent.dealMessage()

@@ -101,7 +101,7 @@ class Server():
         except Exception as e:
             logger.error(f'Other exception in server.register: {e}')
 
-    def comment(self, author: str, content: str, reply_id: int):
+    def comment(self, author: str, content: str, reply_id: int, is_file: bool):
         try:
             if not content:
                 logger.error("COMMENT CAN'T BE EMPTY.")
@@ -114,7 +114,7 @@ class Server():
                 logger.error(f'UNEXPECTED USER {author}.')
                 return False
             with self.lock:
-                self.database.insert_info("comment", {"content": content, "author_id": author_id, "reply_id": reply_id})
+                self.database.insert_info("comment", {"content": content, "is_file": is_file, "author_id": author_id, "reply_id": reply_id})
             return True
         except Exception as e:
             logger.error(f'Other exception in server.comment: {e}')
