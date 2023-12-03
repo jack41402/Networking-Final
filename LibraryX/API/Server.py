@@ -70,9 +70,10 @@ class Server:
             self.server.register_function(self.register_directory, "register_directory")
             self.server.register_function(self.find_directory, "find_directory")
             self.server.register_function(self.delete_directory, "delete_directory")
+            self.server.register_function(self.delete_whole_directory, "delete_whole_directory")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
                         "find_username, receive_file, send_file, find_friend, send_friend_request, find_friend_request, "
-                        "register_directory, find_directory, and delete_directory "
+                        "register_directory, find_directory, delete_directory, and delete_whole_directory "
                         "have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
@@ -271,6 +272,9 @@ class Server:
             return self.database.delete_directory(user_id)
         except Exception as e:
             logger.error(f'Other exception in server.delete_directory: {e}')
+
+    def delete_whole_directory(self):
+        return self.database.delete_whole_directory()
 
     def close(self):
         pass

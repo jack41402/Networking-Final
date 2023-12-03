@@ -17,11 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-<<<<<<< HEAD
       <number>0</number>
-=======
-      <number>1</number>
->>>>>>> Voice-call
      </property>
      <widget class="QWidget" name="Add_Friend">
       <attribute name="title">

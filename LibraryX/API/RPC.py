@@ -142,6 +142,9 @@ class Client(threading.Thread):
     def delete_directory(self, user_id):
         return self.proxy.delete_directory(user_id)
 
+    def delete_whole_directory(self):
+        return self.proxy.delete_whole_directory()
+
     def close(self):
         self.delete_directory(self.user_id)
         self.close()

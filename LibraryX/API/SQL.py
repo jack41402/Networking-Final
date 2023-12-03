@@ -188,7 +188,7 @@ class SQL:
             friend_request = self.command(command, (user_id,))
             return user_request, friend_request
         except Exception as e:
-            logger.error(f'Other exception in SQL.get_friend_status: {e}')
+            logger.error(f'Other exception in SQL.find_friend_request: {e}')
 
     def find_directory(self, user_id):
         try:
@@ -202,7 +202,7 @@ class SQL:
             else:
                 return False
         except Exception as e:
-            logger.error(f'Other exception in SQL.delete_info: {e}')
+            logger.error(f'Other exception in SQL.find_directory: {e}')
 
     def delete_directory(self, user_id):
         try:
@@ -211,4 +211,12 @@ class SQL:
             result = self.command(command, (user_id,))
             return result
         except Exception as e:
-            logger.error(f'Other exception in SQL.delete_info: {e}')
+            logger.error(f'Other exception in SQL.delete_directory: {e}')
+
+    def delete_whole_directory(self):
+        try:
+            command = '''DELETE FROM directory'''
+            result = self.command(command, ())
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.delete_whole_directory: {e}')

@@ -67,6 +67,10 @@ class MainWindow(QMainWindow):
         self.home_panel.Username_label.setText(self.api.username)
         return
 
+    def closeEvent(self, event):
+        self.api.delete_whole_directory()
+        event.accept()
+
 
 def main():
     # configure the root logger
