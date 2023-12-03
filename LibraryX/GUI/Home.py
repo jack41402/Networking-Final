@@ -123,6 +123,7 @@ class HomePanel(QWidget):
     def play_audio_message(self):
         return
 
+
     # embed a file to message in order to send to the receiver
     def send_file(self):
         try:
@@ -182,6 +183,7 @@ class HomePanel(QWidget):
                 return False
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_message: {e}')
+
 
     # send the audio message to server
     def send_audio_message(self, audio_filepath):
@@ -245,6 +247,7 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
 
+
     # render friend list
     def friend_list(self):
         try:
@@ -261,18 +264,20 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.friend_list: {e}')
 
+
     # user attempt to make a video call
     def video_call(self):
         self.logger.info("User attempt to make a video call to receiver")
 
-        # I have no fucking clue of how to do it
+        # giveup
         return
 
     # user attempt to make a audio call
     def voice_call(self):
         self.logger.info("User attempt to make an audio call")
 
-        # I have no idea of the implementation of this too
+        # query server for the receiver IP:ringtong_port
+        # self.voip.dial()
         return
 
     # bind return and enter key to send button
