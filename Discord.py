@@ -5,6 +5,8 @@
 # DESC: Final Project
 
 import logging
+import sys
+
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from LibraryX.GUI import Login, Register, Home
@@ -67,10 +69,6 @@ class MainWindow(QMainWindow):
         self.home_panel.Username_label.setText(self.api.username)
         return
 
-    def closeEvent(self, event):
-        self.api.delete_whole_directory()
-        event.accept()
-
 
 def main():
     # configure the root logger
@@ -83,7 +81,7 @@ def main():
     app = QApplication([])
     window = MainWindow()
     window.hide()
-    app.exec()
+    sys.exit(app.exec())
     return
 
 

@@ -377,3 +377,7 @@ class HomePanel(QWidget):
             return super().eventFilter(obj, event)
         except Exception as e:
             self.logger.error(f'Other exception in Home.eventFilter: {e}')
+
+    def closeEvent(self, event):
+        self.api.delete_directory(self.api.user_id)
+        event.accept()
