@@ -10,7 +10,7 @@ import random
 import socket
 import logging
 import threading
-from LibraryX import TCP_Networking, Utils
+from LibraryX.Utils import TCP_Networking, UDP_Networking, Utils
 
 
 # This is an self designed VoIP-like module, using UDP to handle data transmit
