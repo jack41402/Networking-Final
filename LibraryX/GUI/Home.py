@@ -15,8 +15,9 @@ from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
     QFileDialog, QApplication
-from LibraryX.Extra import Audio
+from LibraryX.Extra import Audio, VoIP
 from LibraryX.GUI import Comment, File
+from LibraryX.Utils import Identify
 
 
 class HomePanel(QWidget):
@@ -46,6 +47,12 @@ class HomePanel(QWidget):
         self.scroll_area_widget = None
         self.scroll_area_layout = None
 
+        # setup the VoIP function
+        self.voip = VoIP.VoIP("127.0.0.1") # for local test
+        # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
+        self.voip.setup()
+
+
     # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):
         msg_box = QMessageBox(self)
@@ -62,9 +69,35 @@ class HomePanel(QWidget):
         msg_box.exec()
         return
 
+
+    # Popup a yes/no message box with "Yes / No" option, return True when Yes, False when No
+    def pop_yesnomessagebox(self, banner, title, text):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(banner)
+        msg_box.setText(title)
+        msg_box.setInformativeText(text)
+        msg_box.setIcon(QMessageBox.Icon.Information)  # Set an icon
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        # Adjusting the size using QSpacerItem
+        spacer = QSpacerItem(200, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout = msg_box.layout()
+        layout.addItem(spacer, layout.rowCount(), 0, 1, layout.columnCount())
+
+        result = msg_box.exec()
+        if result == QMessageBox.StandardButton.Yes:
+            self.logger.info("User pressed True")
+            return True
+
+        elif result == QMessageBox.StandardButton.No:
+            self.logger.info("User pressed False")
+            return False
+
+
     # maybe implement a user setting panel if we have time
     def goto_setting(self):
         return
+
 
     # start record an audio message
     def record_audio_message(self):
@@ -85,9 +118,11 @@ class HomePanel(QWidget):
             self.AudioRecord_Button.setText("Audio\nRecord")
             return
 
+
     # play a received audio message
     def play_audio_message(self):
         return
+
 
     # embed a file to message in order to send to the receiver
     def send_file(self):
@@ -114,6 +149,7 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_file: {e}')
 
+
     # download file from server
     def receive_file(self):
         try:
@@ -125,6 +161,7 @@ class HomePanel(QWidget):
                 self.api.receive_file(file_path, file_id)
         except Exception as e:
             self.logger.error(f'Other exception in Home.receive_file: {e}')
+
 
     # send the text message to server
     def send_message(self, is_file):
@@ -146,6 +183,7 @@ class HomePanel(QWidget):
                 return False
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_message: {e}')
+
 
     # send the audio message to server
     def send_audio_message(self, audio_filepath):
@@ -209,6 +247,7 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
 
+
     # render friend list
     def friend_list(self):
         try:
@@ -225,18 +264,20 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.friend_list: {e}')
 
+
     # user attempt to make a video call
     def video_call(self):
         self.logger.info("User attempt to make a video call to receiver")
 
-        # I have no fucking clue of how to do it
+        # giveup
         return
 
     # user attempt to make a audio call
     def voice_call(self):
         self.logger.info("User attempt to make an audio call")
 
-        # I have no idea of the implementation of this too
+        # query server for the receiver IP:ringtong_port
+        # self.voip.dial()
         return
 
     # bind return and enter key to send button
