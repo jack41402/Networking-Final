@@ -96,11 +96,6 @@ class AudioUtils:
         self.audio.terminate()
 
 
-# for handling transfering the audio to server
-class AudioTransmit:
-    def __init__(self):
-        pass
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
