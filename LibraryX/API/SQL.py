@@ -53,21 +53,9 @@ class SQL:
                     self.command(command, (info["username"], info["password"]))
                     logger.info("Insert into user_information successfully.")
                 case "friend":
-<<<<<<< HEAD
-                    if info["status"] == 'R':
-                        command = "INSERT INTO friend(user_id, friend_id, status) VALUES(%s, %s, %s)"
-                        self.command(command, (info["user_id"], info["friend_id"], info["status"]))
-                        logger.info(f"Insert status {info['status']} into friend successfully.")
-                    else:
-                        command = "INSERT INTO friend(user_id, friend_id) VALUES(%s, %s)"
-                        self.command(command, (info["user_id"], info["friend_id"]))
-                        self.command(command, (info["friend_id"], info["user_id"]))
-                        logger.info("Insert into friend successfully.")
-=======
                     command = "INSERT INTO friend(user_id, friend_id, status) VALUES(%s, %s, %s)"
                     self.command(command, (info["user_id"], info["friend_id"], info["status"]))
                     logger.info(f"Insert status {info['status']} into friend successfully.")
->>>>>>> Voice-call
                 case "comment":
                     command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
                     self.command(command, (info["content"], info["is_file"], info["author_id"], info["reply_id"]))
@@ -224,7 +212,3 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.delete_info: {e}')
-<<<<<<< HEAD
-
-=======
->>>>>>> Voice-call

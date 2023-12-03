@@ -12,11 +12,8 @@ import logging
 import threading
 from PyQt6.QtWidgets import QMessageBox, QSpacerItem, QSizePolicy
 from LibraryX.Utils import TCP_Networking, UDP_Networking, Encode
-<<<<<<< HEAD
 from PyQt6.QtWidgets import QWidget, QMessageBox, QSpacerItem, QSizePolicy
 from LibraryX.API import SQL
-=======
->>>>>>> Voice-call
 
 
 # This is a self designed VoIP-like module, using UDP to handle data transmit
@@ -26,12 +23,7 @@ class VoIP(QWidget):
     RATE = 44100
     CHUNK = 1024
 
-<<<<<<< HEAD
-    def __init__(self, local_ip):
-=======
-
     def __init__(self, local_ip, api):
->>>>>>> Voice-call
         super().__init__()
         self.logger = logging.getLogger(__name__)
         self.audio = pyaudio.PyAudio()
@@ -78,15 +70,9 @@ class VoIP(QWidget):
         self.logger.info(f"Incoming call from: {caller_info}")
 
         # parse data
-<<<<<<< HEAD
-        dialer_ip, dialer_listen_port = caller_info.split(':')
-        return self.pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
-=======
-
         dialer_ip, dialer_listen_port = caller_info.split(':')
         return True
         # return self.pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
->>>>>>> Voice-call
 
     # audio send thread worker
     def __audio_send(self):
@@ -113,28 +99,6 @@ class VoIP(QWidget):
 
     # Popup a yes/no message box with "Yes / No" option, return True when Yes, False when No
     def pop_yesnomessagebox(self, banner, title, text):
-<<<<<<< HEAD
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle(banner)
-        msg_box.setText(title)
-        msg_box.setInformativeText(text)
-        msg_box.setIcon(QMessageBox.Icon.Information)  # Set an icon
-        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-
-        # Adjusting the size using QSpacerItem
-        spacer = QSpacerItem(200, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        layout = msg_box.layout()
-        layout.addItem(spacer, layout.rowCount(), 0, 1, layout.columnCount())
-
-        result = msg_box.exec()
-        if result == QMessageBox.StandardButton.Yes:
-            self.logger.info("User pressed True")
-            return True
-
-        elif result == QMessageBox.StandardButton.No:
-            self.logger.info("User pressed False")
-            return False
-=======
         try:
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle(banner)
@@ -159,7 +123,6 @@ class VoIP(QWidget):
         except Exception as e:
             print(e.__traceback__.tb_lineno)
             self.logger.error(f'Other exception in VoIP.pop_yesnomessagebox: {e}')
->>>>>>> Voice-call
 
     # auto obtain one port as the listening port, and return (IP, Listen_Port) to user
     def setup(self):
@@ -169,17 +132,11 @@ class VoIP(QWidget):
             self.ringtone_thread.start()
             self.logger.info(f"Started the ringtone server on port: {self.ringtone_port}")
 
-<<<<<<< HEAD
-        # register out ringtone port to forum server
-
-        return
-=======
             # register out ringtone port to forum server
             self.api.register_directory(self.api.user_id, self.local_ip, self.ringtone_port)
             return
         except Exception as e:
             self.logger.error(f'Other exception in VoIP.setup: {e}')
->>>>>>> Voice-call
 
     # double connection to establish phone call
     def dial(self, remote_ip, remote_ringtone_port):

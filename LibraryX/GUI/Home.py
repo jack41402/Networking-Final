@@ -16,7 +16,7 @@ from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
     QFileDialog, QApplication, QHBoxLayout, QPushButton, QLabel
 from LibraryX.Extra import Audio, VoIP
-from LibraryX.GUI import Comment, File
+from LibraryX.GUI import Comment, File, Friend
 
 
 class HomePanel(QWidget):
@@ -48,12 +48,6 @@ class HomePanel(QWidget):
         self.VoiceCall_Button.clicked.connect(self.voice_call)
         self.Friend_listWidget.itemClicked.connect(self.render_message)
         self.AudioRecord_Button.clicked.connect(self.record_audio_message)
-
-        # Widget setup
-        self.Comment_textEdit.installEventFilter(self)
-        self.friend_widget = None
-        self.scroll_area_widget = None
-        self.scroll_area_layout = None
 
         # setup the VoIP function
         self.voip = VoIP.VoIP("127.0.0.1", self.api)  # for local test

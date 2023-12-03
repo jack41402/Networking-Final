@@ -69,19 +69,10 @@ class Server:
             self.server.register_function(self.find_friend_request, "find_friend_request")
             self.server.register_function(self.register_directory, "register_directory")
             self.server.register_function(self.find_directory, "find_directory")
-<<<<<<< HEAD
-            self.server.register_function(self.find_friend, "find_friend")
-            self.server.register_function(self.send_friend_request, "send_friend_request")
-            self.server.register_function(self.find_friend_request, "find_friend_request")
-            logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
-                        "find_username, receive_file, send_file, insert_directory, find_directory, find_friend, "
-                        "send_friend_request, and find_friend_request"
-=======
             self.server.register_function(self.delete_directory, "delete_directory")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
                         "find_username, receive_file, send_file, find_friend, send_friend_request, find_friend_request, "
                         "register_directory, find_directory, and delete_directory "
->>>>>>> Voice-call
                         "have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
@@ -246,20 +237,6 @@ class Server:
         except Exception as e:
             logger.error(f'Other exception in server.delete: {e}')
 
-    def insert_directory(self, user_id, ip, port):
-        try:
-            return self.database.insert_info("directory", {"user_id": user_id, "ip": ip, "port": port})
-        except Exception as e:
-            logger.error(f'Other exception in server.insert_directory: {e}')
-
-    def find_directory(self, user_id):
-        try:
-            result = self.database.find_info("directory", "user_id", user_id)
-            user_id, ip, port = result[0]
-            return user_id, (ip, port)
-        except Exception as e:
-            logger.error(f'Other exception in server.find_directory: {e}')
-
     def find_friend(self, user_id, username):
         return self.database.find_friend(user_id, username)
 
@@ -279,11 +256,6 @@ class Server:
 
     def register_directory(self, user_id, ip, port):
         try:
-<<<<<<< HEAD
-            self.database.insert_info("directory", {"user_id":, "ip": self.local_ip, "port": self.ringtone_port})
-        except Exception as e:
-            logger.error(f'Other exception in server.friend_request: {e}')
-=======
             return self.database.insert_info("directory", {"user_id": user_id, "ip": ip, "port": port})
         except Exception as e:
             logger.error(f'Other exception in server.register_directory: {e}')
@@ -299,7 +271,6 @@ class Server:
             return self.database.delete_directory(user_id)
         except Exception as e:
             logger.error(f'Other exception in server.delete_directory: {e}')
->>>>>>> Voice-call
 
     def close(self):
         pass
