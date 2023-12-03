@@ -1,5 +1,7 @@
+# Server RPC Function
 # Student ID: D1166506
 # Name: 周嘉禾
+
 import logging
 from LibraryX.API import SQL
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
@@ -17,6 +19,7 @@ class Server():
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
+        self.server = None
         self.lock = threading.Lock()
         self.database = SQL.SQL()
         self.thread = threading.Thread(target=self.run)

@@ -1,3 +1,4 @@
+# Seems like the client RPC API
 # Student ID: D1166506
 # Name: 周嘉禾
 
@@ -76,6 +77,7 @@ class Client(threading.Thread):
                 info = self.find_user_id(friend[1])[0]
                 friend_info.append({"user_id": info[0], "username": info[1]})
             return tuple(friend_info)
+            
         except Exception as e:
             self.logger.error(f'Other exception in RPC.get_friend: {e}')
 
