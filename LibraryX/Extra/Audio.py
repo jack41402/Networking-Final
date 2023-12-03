@@ -89,13 +89,11 @@ class AudioUtils:
             stream.write(data)
             data = wf.readframes(self.CHUNK)
 
-
         # Close the stream and PyAudio instance
         stream.stop_stream()
         stream.close()
         self.audio.terminate()
         return
-
 
 
 if __name__ == "__main__":

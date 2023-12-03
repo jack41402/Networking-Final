@@ -6,12 +6,15 @@
 
 import datetime
 import logging
+import re
+
 from PyQt6 import QtGui
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
+    QFileDialog
 from LibraryX.Extra import Audio
-from LibraryX.GUI import Comment
+from LibraryX.GUI import Comment,File
 
 
 class HomePanel(QWidget):
@@ -24,7 +27,7 @@ class HomePanel(QWidget):
         self.logger = logging.getLogger(__name__)
         self.audio_agent = Audio.AudioUtils()  # epic audio recording agent
         self.temporary_received_audiofile = None  # temporary received audio file from friend
-        self.temporary_recored_audiofile = None  # temporary self recorded audio file
+        self.temporary_record_audiofile = None  # temporary self recorded audio file
         self.audio_recording = False  # audio recording status
 
         # connect signal
@@ -41,8 +44,7 @@ class HomePanel(QWidget):
         self.scroll_area_widget = None
         self.scroll_area_layout = None
 
-
-    # Popup an messgae box with only "OK option"
+    # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle(banner)
@@ -72,27 +74,40 @@ class HomePanel(QWidget):
             self.AudioRecord_Button.setText("Stop\nRecord")
             return
 
-        else:  # if recording now, stop recoridng
+        else:  # if recording now, stop recording
             self.audio_recording = False
             self.audio_agent.stop_record()
 
             # save the audio filepath to attribute for further sending
-            self.temporary_recored_audiofile = self.audio_agent.tempfile
+            self.temporary_record_audiofile = self.audio_agent.tempfile
             self.AudioRecord_Button.setText("Audio\nRecord")
             return
 
-    # play an received audio message
+    # play a received audio message
     def play_audio_message(self):
         return
 
     # embed a file to message in order to send to the receiver
     def embed_file(self):
-        self.logger.info("User trying to embed an external file to the message")
+        try:
+            self.logger.info("User trying to embed an external file to the message")
+            if self.current_item is not None:
+                filename, filetype = QFileDialog.getOpenFileNames()
+                self.logger.info(f"Open filename {filename}, filetype {filetype}.")
+                author = self.api.username
+                friend = self.current_item.data(Qt.ItemDataRole.UserRole)
+                reply_id = friend["user_id"]
 
-        # I dont know how in detail but try to create a drag and drop area
-
-        # then send that file via binary to the receiver
-        return
+                for content in filename:
+                    content = re.split(r"\\", content)[-1]
+                    self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
+                    self.api.send_file(content)
+                self.render_message(self.current_item)
+                return True
+            else:
+                return False
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.embed_file: {e}')
 
     # send the text message to server
     def send_message(self):
@@ -105,7 +120,7 @@ class HomePanel(QWidget):
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
                 reply_id = friend["user_id"]
 
-                self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": False})
+                self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
 
                 self.render_message(self.current_item)
                 return True
@@ -115,7 +130,7 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_message: {e}')
 
-    # send the audio messge to server
+    # send the audio message to server
     def send_audio_message(self, audio_filepath):
         return
 
@@ -131,14 +146,14 @@ class HomePanel(QWidget):
             friend = item.data(Qt.ItemDataRole.UserRole)
             comments = self.api.get_comment(self.api.user_id, friend["user_id"])
             for comment in comments:
-                form = loadUi("UI/comment.ui")
                 font = QtGui.QFont()
                 today = datetime.date.today()
                 time_delta = datetime.timedelta(days=1)
 
+                comment_id = comment[0]
+                is_file = comment[3]
                 comment_author_id = comment[4]
                 comment_author = self.api.username if comment_author_id == self.api.user_id else friend["username"]
-                comment_content = comment[1]
                 comment_time = datetime.datetime.strptime(str(comment[2]), '%Y%m%dT%H:%M:%S')
                 if comment_time.date() == today:
                     comment_time = comment_time.strftime("Today %H:%M")
@@ -147,14 +162,23 @@ class HomePanel(QWidget):
                 else:
                     comment_time = comment_time.strftime("%Y/%M/%d %H:%M")
 
-                form.Author_label.setText(comment_author)
-                form.Time_label.setText(comment_time)
-                form.Comment_label.setText(comment_content)
 
+                if is_file:
+                    filename = comment[1]
+                    form = File.FilePanel(comment_author, comment_time, filename)
+                    font.setPointSize(12)
+                    form.File_Button.setFont(font)
+                    form.File_Button.setProperty("comment_id", comment_id)
+                    form.File_Button.clicked.connect(self.get_file)
+                else:
+                    comment_content = comment[1]
+                    form = Comment.CommentPanel(comment_author, comment_time, comment_content)
+                    form.Comment_label.setFont(font)
                 font.setPointSize(9)
-                form.Comment_label.setFont(font)
+                form.Time_label.setFont(font)
                 font.setBold(True)
                 form.Author_label.setFont(font)
+                form.setProperty("comment_id", comment_id)
 
                 self.scroll_area_layout.addWidget(form)
 
@@ -192,8 +216,12 @@ class HomePanel(QWidget):
     def voice_call(self):
         self.logger.info("User attempt to make an audio call")
 
-        # I have no idea of the implmentation of this too
+        # I have no idea of the implementation of this too
         return
+
+    # download file from server
+    def get_file(self, item):
+        pass
 
     # bind return and enter key to send button
     def eventFilter(self, obj, event):

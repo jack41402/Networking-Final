@@ -3,19 +3,23 @@
 # Name: 周嘉禾
 
 import logging
+import os.path
+import re
+from xmlrpc import client
 from LibraryX.API import SQL
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from socketserver import ThreadingMixIn
 import threading
 
 logger = logging.getLogger(__name__)
+main_path = r"./File/server"
 
 
 class ThreadXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
 
-class Server():
+class Server:
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
@@ -54,8 +58,10 @@ class Server():
             self.server.register_function(self.delete, "delete")
             self.server.register_function(self.find_user_id, "find_user_id")
             self.server.register_function(self.find_username, "find_username")
+            self.server.register_function(self.receive_file, "receive_file")
+            self.server.register_function(self.send_file, "send_file")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
-                        "and find_username have been registered.")
+                        "find_username, receive_file, and send_file have been registered.")
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
 
@@ -117,7 +123,8 @@ class Server():
                 logger.error(f'UNEXPECTED USER {author}.')
                 return False
             with self.lock:
-                self.database.insert_info("comment", {"content": content, "is_file": is_file, "author_id": author_id, "reply_id": reply_id})
+                self.database.insert_info("comment", {"content": content, "is_file": is_file, "author_id": author_id,
+                                                      "reply_id": reply_id})
             return True
         except Exception as e:
             logger.error(f'Other exception in server.comment: {e}')
@@ -187,6 +194,36 @@ class Server():
 
     def find_username(self, username: str):
         return self.database.find_info("user_information", "username", username)
+
+    # Function to receive and save the file on the server
+    def receive_file(self, filename, file_content):
+        try:
+            file_type = re.split("[\\\.]", filename)[-1]
+            file_info = self.database.find_info("comment", "content", filename)[-1]
+            server_filename = str(file_info[0] + '.' + file_type)
+            file_path = os.path.join(main_path, server_filename)
+            logger.info(
+                f"Server filename: {server_filename}, File type: {file_type}, File info: {file_info}, File path: {file_path}")
+            with open(file_path, 'wb') as file:
+                file.write(file_content.data)
+            return True
+        except Exception as e:
+            logger.error(f'Other exception in server.receive_file: {e}')
+
+    # Function to send a file content to the client
+    def send_file(self, file_id):
+        try:
+            file_info = self.database.find_info("comment", "comment_id", file_id)[0]
+            filename = file_info[1]
+            file_type = re.split("[\\\.]", filename)[-1]
+            server_filename = str(file_info[0] + '.' + file_type)
+            file_path = os.path.join(main_path, server_filename)
+            with open(file_path, 'rb') as file:
+                file_content = file.read()
+                file_content_base64 = client.Binary(file_content)
+            return file_content_base64
+        except Exception as e:
+            logger.error(f'Other exception in server.delete: {e}')
 
     def close(self):
         pass

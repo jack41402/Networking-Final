@@ -23,12 +23,10 @@ class Client(threading.Thread):
     def run(self):
         self.connection()
 
-
     def connection(self):
         self.logger.info("Connecting to %s port %s" % (self.ip, self.port))
         self.proxy = xmlrpc.client.ServerProxy(self.address, allow_none=True)
         self.logger.info("Connected successfully.")
-
 
     def login(self, username: str, password: str):
         try:
@@ -43,20 +41,17 @@ class Client(threading.Thread):
         except Exception as e:
             self.logger.error(f'Other exception in RPC.login: {e}')
 
-
     def register(self, username: str, password: str, confirm_password: str):
         try:
             return self.proxy.register(username, password, confirm_password)
         except Exception as e:
             self.logger.error(f'Other exception in RPC.register: {e}')
 
-
     def send(self, info):
         try:
             return self.proxy.comment(info["author"], info["content"], info["reply_id"], info["is_file"])
         except Exception as e:
             self.logger.error(f'Other exception in RPC.send: {e}')
-
 
     def delete(self, info):
         try:
@@ -74,7 +69,6 @@ class Client(threading.Thread):
         except Exception as e:
             self.logger.error(f'Other exception in RPC.delete: {e}')
 
-
     def get_friend(self, user_id):
         try:
             friend_info = []
@@ -83,10 +77,9 @@ class Client(threading.Thread):
                 info = self.find_user_id(friend[1])[0]
                 friend_info.append({"user_id": info[0], "username": info[1]})
             return tuple(friend_info)
-            
+
         except Exception as e:
             self.logger.error(f'Other exception in RPC.get_friend: {e}')
-
 
     def get_comment(self, author_id, reply_id):
         try:
@@ -94,14 +87,27 @@ class Client(threading.Thread):
         except Exception as e:
             self.logger.error(f'Other exception in RPC.get_comment: {e}')
 
-
     def find_user_id(self, user_id: int):
         return self.proxy.find_user_id(user_id)
-
 
     def find_username(self, username: str):
         return self.proxy.find_username(username)
 
+    def receive_file(self):
+        try:
+            pass
+        except Exception as e:
+            self.logger.error(f'Other exception in RPC.receive_file: {e}')
+
+    def send_file(self, file_path):
+        try:
+            self.logger.info(f"File path: {file_path}")
+            with open(file_path, 'rb') as file:
+                file_content = file.read()
+                self.logger.info(f"File content: {file_content}")
+                self.proxy.receive_file(xmlrpc.client.Binary(file_content))
+        except Exception as e:
+            self.logger.error(f'Other exception in RPC.send_file: {e}')
 
     def close(self):
         pass
