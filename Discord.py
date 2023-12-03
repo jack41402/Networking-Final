@@ -12,8 +12,7 @@ from LibraryX.GUI import Login, Register, Home
 from LibraryX.API import RPC, server
 
 SERVER_IP = "127.0.0.1"
-SERVER_PORT = 6667
-
+SERVER_PORT = 6666
 
 # DESC: The all-in-one class that handles everything
 class MainWindow(QMainWindow):
