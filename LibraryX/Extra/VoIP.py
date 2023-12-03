@@ -75,7 +75,7 @@ class VoIP:
 	def __audio_send(self):
 		with self.audio.open(format=self.FORMAT, channels=self.CHANNEL, rate=self.RATE, input=True, frames_per_buffer=self.CHUNK) as stream:
 			while not self.is_hangup.is_emit():
-				data = stream.read(CHUNK)
+				data = stream.read(self.CHUNK)
 				self.speak_socket.send(data)
 
 		self.logger("received hangup signal in the audio sending thread")
