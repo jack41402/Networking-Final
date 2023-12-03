@@ -49,7 +49,7 @@ class VoIP:
 			dailer_ip, dailer_listen_port = dailer_detail.split(':')
 
 			# trigger the callback to ask if answer or not
-			status = callback_func(caller_detail[1])
+			status = callback_func(dailer_detail[1])
 
 			# check what the callback function returned
 			if (status):
