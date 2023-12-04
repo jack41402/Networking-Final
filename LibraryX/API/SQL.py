@@ -12,7 +12,7 @@ class SQL:
 
     def connection(self):
         try:
-            with open("./config.yaml", 'r') as stream:
+            with open("./LibraryX/API/config.yaml", 'r') as stream:
                 config = yaml.load(stream, Loader=yaml.FullLoader)
         except FileNotFoundError:
             logger.error("FILE config.yaml NOT FOUND.")

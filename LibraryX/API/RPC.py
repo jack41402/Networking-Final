@@ -101,28 +101,29 @@ class Client(threading.Thread):
         try:
             file_content = self.proxy.send_file(file_id)
             file_type = re.split(r"\.", file_path)[-1]
-            with open(file_path, 'wb') as received_file:
-                received_file.write(file_content.data)
+            if file_type == "wav":
+                rate, data = wavfile.write(file_path, file_content[0], file_content[1])
+            else:
+                with open(file_path, 'wb') as received_file:
+                    received_file.write(file_content.data)
         except Exception as e:
             self.logger.error(f'Other exception in RPC.receive_file: {e}')
 
     def send_file(self, file_path):
         try:
             self.logger.info(f"File path: {file_path}")
+            file_type = re.split(r"\.", file_path)[-1]
             filename = re.split(r"/", file_path)[-1]
-            with open(file_path, 'rb') as file:
-                file_content = file.read()
-                self.logger.info(f"File content: {file_content}")
-                self.proxy.receive_file(filename, xmlrpc.client.Binary(file_content))
+            if file_type == "wav":
+                rate, data = wavfile.read(file_path)
+                self.proxy.receive_file(filename, (rate, data))
+            else:
+                with open(file_path, 'rb') as file:
+                    file_content = file.read()
+                    self.logger.info(f"File content: {file_content}")
+                    self.proxy.receive_file(filename, xmlrpc.client.Binary(file_content))
         except Exception as e:
             self.logger.error(f'Other exception in RPC.send_file: {e}')
-
-    def insert_directory(self):
-        return self.proxy.insert_directory(self.user_id, self.ip, self.port)
-
-    def find_directory(self, user_id):
-        user_id, (ip, port) = self.proxy.find_directory(user_id)
-        return user_id, (ip, port)
 
     def find_friend(self, user_id, username):
         return self.proxy.find_friend(user_id, username)
