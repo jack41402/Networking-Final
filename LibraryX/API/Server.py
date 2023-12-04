@@ -10,6 +10,7 @@ from LibraryX.API import SQL
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from socketserver import ThreadingMixIn
 import threading
+from scipy.io import wavfile
 
 logger = logging.getLogger(__name__)
 main_path = r"./File/server"
@@ -217,9 +218,12 @@ class Server:
             file_path = os.path.join(main_path, server_filename)
             logger.info(
                 f"Server filename: {server_filename}, File type: {file_type}, File info: {file_info}, File path: {file_path}")
-            with open(file_path, 'wb') as file:
-                file.write(file_content.data)
-            return True
+            if file_type == "wav":
+                wavfile.write(file_path, file_content[0], file_content[1])
+            else:
+                with open(file_path, 'wb') as file:
+                    file.write(file_content.data)
+                return True
         except Exception as e:
             logger.error(f'Other exception in server.receive_file: {e}')
 
@@ -231,10 +235,14 @@ class Server:
             file_type = re.split("[\\\.]", filename)[-1]
             server_filename = str(str(file_info[0]) + '.' + file_type)
             file_path = os.path.join(main_path, server_filename)
-            with open(file_path, 'rb') as file:
-                file_content = file.read()
-                file_content_base64 = client.Binary(file_content)
-            return file_content_base64
+            if file_type == "wav":
+                rate, data = wavfile.read('./output/audio.wav')
+                return rate, data
+            else:
+                with open(file_path, 'rb') as file:
+                    file_content = file.read()
+                    file_content_base64 = client.Binary(file_content)
+                return file_content_base64
         except Exception as e:
             logger.error(f'Other exception in server.delete: {e}')
 

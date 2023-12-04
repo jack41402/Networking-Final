@@ -7,6 +7,8 @@ import re
 import xmlrpc.client
 import datetime
 import threading
+from scipy.io import wavfile
+
 
 
 class Client(threading.Thread):
@@ -98,6 +100,7 @@ class Client(threading.Thread):
     def receive_file(self, file_path, file_id):
         try:
             file_content = self.proxy.send_file(file_id)
+            file_type = re.split(r"\.", file_path)[-1]
             with open(file_path, 'wb') as received_file:
                 received_file.write(file_content.data)
         except Exception as e:

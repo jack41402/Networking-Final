@@ -19,6 +19,8 @@ from LibraryX.Extra import Audio, VoIP
 from LibraryX.GUI import Comment, File, Friend
 
 
+client_path = r"D:\GitHub\Networking-Final\File\client"
+
 class HomePanel(QWidget):
     def __init__(self, api):
         super().__init__()
@@ -196,13 +198,34 @@ class HomePanel(QWidget):
             # save the audio filepath to attribute for further sending
             self.temporary_record_audiofile = self.audio_agent.tempfile
             self.AudioRecord_Button.setText("Audio\nRecord")
+            self.send_audio_message(self.temporary_record_audiofile)
             return
 
+    # send the audio message to server
+    def send_audio_message(self, audio_file_path):
+        try:
+            if self.current_item is not None:
+                author = self.api.username
+                friend = self.current_item.data(Qt.ItemDataRole.UserRole)
+                reply_id = friend["user_id"]
+                if os.path.exists(audio_file_path):
+                    content = re.split(r"\\", audio_file_path)[-1]
+                    self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
+                    self.api.send_file(audio_file_path)
+                else:
+                    self.logger.error(f"CAN'T FIND FILE PATH OF {audio_file_path}")
+                self.render_message(self.current_item)
+                return True
+            else:
+                return False
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.send_file: {e}')
 
     # play a received audio message
     def play_audio_message(self):
-        return
-
+        button = self.app.sender()
+        file_path = button.property("file_path")
+        self.audio_agent.play(file_path)
 
     # embed a file to message in order to send to the receiver
     def send_file(self):
@@ -229,7 +252,6 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_file: {e}')
 
-
     # download file from server
     def receive_file(self):
         try:
@@ -241,7 +263,6 @@ class HomePanel(QWidget):
                 self.api.receive_file(file_path, file_id)
         except Exception as e:
             self.logger.error(f'Other exception in Home.receive_file: {e}')
-
 
     # send the text message to server
     def send_message(self, is_file):
@@ -263,11 +284,6 @@ class HomePanel(QWidget):
                 return False
         except Exception as e:
             self.logger.error(f'Other exception in Home.send_message: {e}')
-
-
-    # send the audio message to server
-    def send_audio_message(self, audio_filepath):
-        return
 
     # re-render all the msg in a chat
     def render_message(self, item):
@@ -304,11 +320,27 @@ class HomePanel(QWidget):
 
                 if is_file:
                     filename = comment[1]
-                    form = File.FilePanel(comment_author, comment_time, filename)
-                    font.setPointSize(12)
-                    form.File_Button.setFont(font)
-                    form.File_Button.setProperty("comment_id", comment_id)
-                    form.File_Button.clicked.connect(self.receive_file)
+                    file_type = re.split(r"\.", filename)[-1]
+                    print(filename)
+                    print(file_type)
+                    match file_type:
+                        case "wav":
+                            form = File.FilePanel(comment_author, comment_time, "")
+                            form.File_Button.setIcon(QIcon(r".\UI\play.png"))
+                            form.File_Button.setIconSize(form.File_Button.sizeHint())
+                            file_path = os.path.join(client_path, filename)
+                            print(file_path)
+                            self.api.receive_file(file_path, comment_id)
+                            font.setPointSize(12)
+                            form.File_Button.setFont(font)
+                            form.File_Button.setProperty("file_path", file_path)
+                            form.File_Button.clicked.connect(self.play_audio_message)
+                        case _:
+                            form = File.FilePanel(comment_author, comment_time, filename)
+                            font.setPointSize(12)
+                            form.File_Button.setFont(font)
+                            form.File_Button.setProperty("comment_id", comment_id)
+                            form.File_Button.clicked.connect(self.receive_file)
                 else:
                     comment_content = comment[1]
                     form = Comment.CommentPanel(comment_author, comment_time, comment_content)
@@ -328,7 +360,6 @@ class HomePanel(QWidget):
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
 
-
     # render friend list
     def friend_list(self):
         try:
@@ -343,7 +374,6 @@ class HomePanel(QWidget):
                 self.Friend_listWidget.addItem(item)
         except Exception as e:
             self.logger.error(f'Other exception in Home.friend_list: {e}')
-
 
     # user attempt to make a video call
     def video_call(self):
