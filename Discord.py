@@ -10,7 +10,7 @@ import sys
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from LibraryX.GUI import Login, Register, Home
-from LibraryX.API import RPC, Server
+from LibraryX.API import RPC
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 6666 # for debug
