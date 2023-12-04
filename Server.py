@@ -14,7 +14,7 @@ from scipy.io import wavfile
 
 logger = logging.getLogger(__name__)
 main_path = r"./File/server"
-SERVER_IP = "127.0.0.1"
+SERVER_IP = "0.0.0.0"
 SERVER_PORT = 6666
 
 
