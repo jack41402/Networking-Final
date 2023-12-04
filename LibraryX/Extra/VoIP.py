@@ -27,6 +27,7 @@ class VoIP(QWidget):
 
     def __init__(self, local_ip, api, pop_msgbox_signal):
         super().__init__()
+        self.ANSWER_OR_REJECT_SIGNAL.connect(self._ringtone_handler)
         self.pop_msgbox_signal = pop_msgbox_signal
         self.condition = threading.Condition()
         self.logger = logging.getLogger(__name__)
@@ -40,10 +41,10 @@ class VoIP(QWidget):
         self.local_listen_port = None  # local audio listen port
         self.ringtone_port = random.randint(8000, 9000)  # ringtone server port
         self.ringtone_thread = threading.Thread(target=self.__ringtone_detector, args=(self._ringtone_callback,))
-        self.speak_thread = threading.Thread(target=self.__audio_send)
-        self.listen_thread = threading.Thread(target=self.__audio_receive)
-        self.speak_thread.daemon = True
-        self.listen_thread.daemon = True
+        self.speak_thread = None
+        self.listen_thread = None
+        self.dialer_ip = None
+        self.dialer_listen_port = None
         self.api = api
 
     # non-stop thread worker for checking if got incoming call, trigger callback when got call
@@ -72,10 +73,10 @@ class VoIP(QWidget):
         self.logger.info(f"Incoming call from: {caller_info}")
 
         # parse data
-        dialer_ip, dialer_listen_port = caller_info.split(':')
+        self.dialer_ip, self.dialer_listen_port = caller_info.split(':')
 
         # pop msgbox in the main thread
-        self.pop_msgbox_signal.emit("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
+        self.pop_msgbox_signal.emit("[Audio Call]", f"Incomming call from {self.dialer_ip} !", "Answer it or not ?")
         return
         # return self.pop_yesnomessagebox("[Audio Call]", f"Incomming call from {dialer_ip} !", "Answer it or not ?")
 
@@ -83,15 +84,17 @@ class VoIP(QWidget):
     def _ringtone_handler(self, choice):
         # check what the callback function returned
         if choice:
+            self.logger.info("Accepting Call")
             self.ringtone_socket.send("[OK]", datatype=Encode.EncodeType.STR)
-            self.answer(dialer_ip, int(dialer_listen_port))
+            self.answer(self.dialer_ip, int(self.dialer_listen_port))
 
         else:
+            self.logger.info("Rejecting Call")
             self.ringtone_socket.send("[REJECT]", datatype=Encode.EncodeType.STR)
 
         # notify that user had made choice
         with self.condition:
-            self.condition.notifyAll()
+            self.condition.notify()
 
     # audio send thread worker
     def __audio_send(self):
@@ -225,6 +228,10 @@ class VoIP(QWidget):
 
     # audio transmission start
     def audio_stream(self):
+        self.speak_thread = threading.Thread(target=self.__audio_send)
+        self.listen_thread = threading.Thread(target=self.__audio_receive)
+        self.speak_thread.daemon = True
+        self.listen_thread.daemon = True
         self.speak_thread.start()
         self.listen_thread.start()
         return
@@ -239,4 +246,9 @@ class VoIP(QWidget):
         self.speak_thread.join()
         self.listen_thread.join()
         self.logger.info("Audio listening & sending thread joined elegently")
+
+        # reinitialize the voip server
+        self.is_hangup.clear()
+        self.local_listen_port = None
+        self.remote_listen_port = None
         return
