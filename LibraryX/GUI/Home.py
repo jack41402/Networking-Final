@@ -12,7 +12,7 @@ import sys
 from PyQt6 import QtGui
 from PyQt6.QtGui import QIcon
 from PyQt6.uic import loadUi
-from PyQt6.QtCore import Qt, QSize, QEvent
+from PyQt6.QtCore import Qt, QSize, QEvent, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
     QFileDialog, QApplication, QHBoxLayout, QPushButton, QLabel
 from LibraryX.Extra import Audio, VoIP
@@ -22,6 +22,8 @@ from LibraryX.GUI import Comment, File, Friend
 client_path = r"D:\GitHub\Networking-Final\File\client"
 
 class HomePanel(QWidget):
+    pop_msgbox_signal = pyqtSignal(str, str, str)
+
     def __init__(self, api):
         super().__init__()
         loadUi("UI/home.ui", self)
@@ -30,6 +32,7 @@ class HomePanel(QWidget):
         self.current_item = None
         self.app = QApplication(sys.argv)
         self.logger = logging.getLogger(__name__)
+        self.is_calling = False
         self.audio_agent = Audio.AudioUtils()  # epic audio recording agent
         self.temporary_received_audiofile = None  # temporary received audio file from friend
         self.temporary_record_audiofile = None  # temporary self recorded audio file
@@ -42,6 +45,7 @@ class HomePanel(QWidget):
         self.scroll_area_layout = None
 
         # connect signal
+        self.pop_msgbox_signal.connect(self.pop_yesnomessagebox)
         self.Friend_Button.clicked.connect(self.goto_friend)
         self.friend_widget.friend_signal.connect(self.search_friend)
         self.friend_widget.Add_Friend_listWidget.itemClicked.connect(self.send_friend_request)
@@ -52,8 +56,10 @@ class HomePanel(QWidget):
         self.AudioRecord_Button.clicked.connect(self.record_audio_message)
 
         # setup the VoIP function
-        self.voip = VoIP.VoIP("127.0.0.1", self.api)  # for local test
+        self.voip = VoIP.VoIP("127.0.0.1", self.api, self.pop_msgbox_signal)  # for local test
         # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
+        # connect voip signal
+
 
     # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):
@@ -87,12 +93,14 @@ class HomePanel(QWidget):
 
         result = msg_box.exec()
         if result == QMessageBox.StandardButton.Yes:
+            self.is_calling = True
+            self.VoiceCall_Button.setText("Hang\nUp !")
             self.logger.info("User pressed True")
-            return True
+            return self.voip.ANSWER_OR_REJECT_SIGNAL.emit(True)
 
         elif result == QMessageBox.StandardButton.No:
             self.logger.info("User pressed False")
-            return False
+            return self.voip.ANSWER_OR_REJECT_SIGNAL.emit(False)
 
     # maybe implement a user setting panel if we have time
     def goto_friend(self):
@@ -385,14 +393,24 @@ class HomePanel(QWidget):
     # user attempt to make a audio call
     def voice_call(self):
         try:
-            self.logger.info("User attempt to make an audio call")
-            button = self.app.sender()
-            user_id = button.property("user_id")
-            ip, port = self.api.find_directory(user_id)
-            # query server for the receiver IP:ringtong_port
-            # port can only be int
-            self.voip.dial(ip, port)
+            if not self.is_calling:
+                self.is_calling = True
+                self.VoiceCall_Button.setText("Hang\nUp !")
+                self.logger.info("User attempt to make an audio call")
+                button = self.app.sender()
+                user_id = button.property("user_id")
+                ip, port = self.api.find_directory(user_id)
+                # query server for the receiver IP:ringtong_port
+                # port can only be int
+                self.voip.dial(ip, port)
+
+            else:
+                self.is_calling = False
+                self.VoiceCall_Button.setText("Voice\nCall !")
+                self.voip.hangup()
+
             return
+
         except Exception as e:
             print(e.__traceback__.tb_lineno)
             self.logger.error(f'Other exception in Home.voice_call: {e}')

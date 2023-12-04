@@ -61,7 +61,7 @@
           </font>
          </property>
          <property name="styleSheet">
-          <string notr="true">qproperty-icon: url(friend.png);
+          <string notr="true">qproperty-icon: url(./UI/friend.png);
 qproperty-iconSize: 15px;
 </string>
          </property>
@@ -134,7 +134,8 @@ qproperty-iconSize: 15px;
           </font>
          </property>
          <property name="text">
-          <string>Voice</string>
+          <string>Voice
+Call !</string>
          </property>
         </widget>
        </item>
@@ -154,7 +155,7 @@ qproperty-iconSize: 15px;
           <x>0</x>
           <y>0</y>
           <width>676</width>
-          <height>436</height>
+          <height>433</height>
          </rect>
         </property>
        </widget>
