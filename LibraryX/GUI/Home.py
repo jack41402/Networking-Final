@@ -40,6 +40,8 @@ class HomePanel(QWidget):
         self.scroll_area_layout = None
 
         # connect signal
+        self.pop_msgbox_signal = pyqtSignal(str, str, str)
+        self.pop_msgbox_signal.connect(self.pop_yesnomessagebox)
         self.Friend_Button.clicked.connect(self.goto_friend)
         self.friend_widget.friend_signal.connect(self.search_friend)
         self.friend_widget.Add_Friend_listWidget.itemClicked.connect(self.send_friend_request)
@@ -50,8 +52,10 @@ class HomePanel(QWidget):
         self.AudioRecord_Button.clicked.connect(self.record_audio_message)
 
         # setup the VoIP function
-        self.voip = VoIP.VoIP("127.0.0.1", self.api)  # for local test
+        self.voip = VoIP.VoIP("127.0.0.1", self.api, self.pop_msgbox_signal)  # for local test
         # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
+        # connect voip signal
+
 
     # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):
@@ -86,11 +90,11 @@ class HomePanel(QWidget):
         result = msg_box.exec()
         if result == QMessageBox.StandardButton.Yes:
             self.logger.info("User pressed True")
-            return True
+            return self.voip.ANSWER_OR_REJECT_SIGNAL.emit(True)
 
         elif result == QMessageBox.StandardButton.No:
             self.logger.info("User pressed False")
-            return False
+            return self.voip.ANSWER_OR_REJECT_SIGNAL.emit(False)
 
     # maybe implement a user setting panel if we have time
     def goto_friend(self):
