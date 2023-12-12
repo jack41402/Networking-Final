@@ -1,10 +1,10 @@
 # Server RPC Function
 # Student ID: D1166506
 # Name: 周嘉禾
-
 import logging
 import os.path
 import re
+import time
 from xmlrpc import client
 from LibraryX.API import SQL
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
@@ -14,7 +14,7 @@ from scipy.io import wavfile
 
 logger = logging.getLogger(__name__)
 main_path = r"./File/server"
-SERVER_IP = "0.0.0.0"
+SERVER_IP = "127.0.0.1"
 SERVER_PORT = 6666
 
 
@@ -33,8 +33,7 @@ class Server:
 
     def start(self):
         self.thread.start()
-        return
-
+    
     def run(self):
         try:
             self.connection()
@@ -45,8 +44,8 @@ class Server:
 
     def connection(self):
         try:
-            logger.info(f'Starting up server on port: {self.port}')
-            self.server = ThreadXMLRPCServer(("localhost", self.port), allow_none=True)
+            logger.info(f'Starting up server on {self.ip}: {self.port}')
+            self.server = ThreadXMLRPCServer((self.ip, self.port), allow_none=True)
             logger.info("Waiting for connection...")
         except Exception as e:
             logger.error(f'Other exception in server.connection: {e}')
@@ -76,6 +75,7 @@ class Server:
                         "find_username, receive_file, send_file, find_friend, send_friend_request, find_friend_request, "
                         "register_directory, find_directory, delete_directory, and delete_whole_directory "
                         "have been registered.")
+            # print(self.server.system_listMethods())
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
 
@@ -289,5 +289,10 @@ class Server:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='[%(levelname)s] - %(message)s (%(name)s / %(funcName)s:%(lineno)d)',
+    )
+
     RPC_server = Server(SERVER_IP, SERVER_PORT)
     RPC_server.start()

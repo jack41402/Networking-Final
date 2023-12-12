@@ -18,8 +18,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpace
 from LibraryX.Extra import Audio, VoIP
 from LibraryX.GUI import Comment, File, Friend
 
-
 client_path = r"D:\GitHub\Networking-Final\File\client"
+
 
 class HomePanel(QWidget):
     pop_msgbox_signal = pyqtSignal(str, str, str)
@@ -59,7 +59,6 @@ class HomePanel(QWidget):
         self.voip = VoIP.VoIP("127.0.0.1", self.api, self.pop_msgbox_signal)  # for local test
         # self.voip = VoIP.VoIP(Identity.local_intranet_ip()) # for intranet
         # connect voip signal
-
 
     # Popup a message box with only "OK option"
     def pop_okmessagebox(self, banner, title, text):

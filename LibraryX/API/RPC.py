@@ -1,14 +1,12 @@
 # Seems like the client RPC API
 # Student ID: D1166506
 # Name: 周嘉禾
-
 import logging
 import re
 import xmlrpc.client
 import datetime
 import threading
 from scipy.io import wavfile
-
 
 
 class Client(threading.Thread):
@@ -27,9 +25,15 @@ class Client(threading.Thread):
         self.connection()
 
     def connection(self):
-        self.logger.info("Connecting to %s port %s" % (self.ip, self.port))
-        self.proxy = xmlrpc.client.ServerProxy(self.address, allow_none=True)
-        self.logger.info("Connected successfully.")
+        try:
+            self.logger.info("Connecting to %s: %s" % (self.ip, self.port))
+            self.proxy = xmlrpc.client.ServerProxy(self.address, allow_none=True)
+            response = self.proxy.sy
+            print(response)
+            self.logger.info("Connected successfully.")
+        except Exception as e:
+            print(e.__traceback__.tb_lineno)
+            self.logger.error(f'Other exception in RPC.connection: {e}')
 
     def login(self, username: str, password: str):
         try:
@@ -42,6 +46,7 @@ class Client(threading.Thread):
             else:
                 return False
         except Exception as e:
+            print(e.__traceback__.tb_lineno)
             self.logger.error(f'Other exception in RPC.login: {e}')
 
     def register(self, username: str, password: str, confirm_password: str):
@@ -116,6 +121,8 @@ class Client(threading.Thread):
             filename = re.split(r"/", file_path)[-1]
             if file_type == "wav":
                 rate, data = wavfile.read(file_path)
+                print(filename)
+                print((rate, data))
                 self.proxy.receive_file(filename, (rate, data))
             else:
                 with open(file_path, 'rb') as file:
