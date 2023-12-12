@@ -28,11 +28,8 @@ class Client(threading.Thread):
         try:
             self.logger.info("Connecting to %s: %s" % (self.ip, self.port))
             self.proxy = xmlrpc.client.ServerProxy(self.address, allow_none=True)
-            response = self.proxy.sy
-            print(response)
             self.logger.info("Connected successfully.")
         except Exception as e:
-            print(e.__traceback__.tb_lineno)
             self.logger.error(f'Other exception in RPC.connection: {e}')
 
     def login(self, username: str, password: str):
@@ -46,7 +43,6 @@ class Client(threading.Thread):
             else:
                 return False
         except Exception as e:
-            print(e.__traceback__.tb_lineno)
             self.logger.error(f'Other exception in RPC.login: {e}')
 
     def register(self, username: str, password: str, confirm_password: str):
