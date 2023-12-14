@@ -64,6 +64,10 @@ class SQL:
                     command = "INSERT INTO directory(user_id, ip, port) VALUES(%s, %s, %s)"
                     self.command(command, (info["user_id"], info["ip"], info["port"]))
                     logger.info("Insert into directory successfully.")
+                case "file":
+                    command = "INSERT INTO comment(name, type, data, time, author_id, reply_id) VALUES(%s, %s, LOAD_FILE(%s), NOW(), %s, %s)"
+                    self.command(command, (info["name"], info["type"], info["file_path"], info["author_id"], info["reply_id"]))
+                    logger.info("Insert into comment successfully.")
                 case _:
                     logger.error(f'''TABLE {table} DOES NOT EXIST.''')
                     return False
