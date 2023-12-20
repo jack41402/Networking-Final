@@ -146,7 +146,7 @@ class HomePanel(QWidget):
     def get_friend_request(self):
         try:
             self.friend_widget.Friend_Request_listWidget.clear()
-            user_request, friend_request = self.api.find_friend_request(self.api.user_id)
+            user_request, friend_request = self.api.get_friend_request(self.api.user_id)
             for request in user_request:
                 friend_info = self.api.find_user_id(request[2])[0]
                 item = QListWidgetItem(f"{friend_info[1]} (Waiting...)")

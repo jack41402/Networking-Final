@@ -57,17 +57,17 @@ class SQL:
                     self.command(command, (info["user_id"], info["friend_id"], info["status"]))
                     logger.info(f"Insert status {info['status']} into friend successfully.")
                 case "comment":
-                    command = "INSERT INTO comment(content, time, is_file, author_id, reply_id) VALUES(%s, NOW(), %s, %s, %s)"
-                    self.command(command, (info["content"], info["is_file"], info["author_id"], info["reply_id"]))
+                    command = "INSERT INTO comment(content, time, author_id, reply_id) VALUES(%s, NOW(), %s, %s)"
+                    self.command(command, (info["content"], info["author_id"], info["reply_id"]))
+                    logger.info("Insert into comment successfully.")
+                case "file":
+                    command = "INSERT INTO comment(name, type, data, time, author_id, reply_id) VALUES(%s, %s, %s, NOW(), %s, %s)"
+                    self.command(command,(info["name"], info["type"], info["data"], info["author_id"], info["reply_id"]))
                     logger.info("Insert into comment successfully.")
                 case "directory":
                     command = "INSERT INTO directory(user_id, ip, port) VALUES(%s, %s, %s)"
                     self.command(command, (info["user_id"], info["ip"], info["port"]))
                     logger.info("Insert into directory successfully.")
-                case "file":
-                    command = "INSERT INTO comment(name, type, data, time, author_id, reply_id) VALUES(%s, %s, LOAD_FILE(%s), NOW(), %s, %s)"
-                    self.command(command, (info["name"], info["type"], info["file_path"], info["author_id"], info["reply_id"]))
-                    logger.info("Insert into comment successfully.")
                 case _:
                     logger.error(f'''TABLE {table} DOES NOT EXIST.''')
                     return False
@@ -85,7 +85,28 @@ class SQL:
         except Exception as e:
             logger.error(f'Other exception in SQL.find_info: {e}')
 
-    def find_comment(self, author_id, reply_id):
+    def delete_info(self, table: str, key: str, value):
+        try:
+            command = '''DELETE FROM %s WHERE %s="%s"'''
+            value = str(value)
+            command %= table, key, value
+            result = self.command(command, ())
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.delete_info: {e}')
+
+    def get_table(self, table: str):
+        try:
+            command = "SELECT * FROM " + table
+            result = self.command(command, ())
+            if result:
+                logger.info(f'Result in table {table}: {result}')
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.get_table: {e}')
+
+    # Comment
+    def get_comment(self, author_id, reply_id):
         try:
             command = '''SELECT * FROM comment WHERE (author_id, reply_id) IN ((%s, %s), (%s, %s))  ORDER BY time ASC'''
             author_id = str(author_id)
@@ -93,8 +114,20 @@ class SQL:
             result = self.command(command, (author_id, reply_id, reply_id, author_id))
             return result
         except Exception as e:
-            logger.error(f'Other exception in SQL.find_friend: {e}')
+            logger.error(f'Other exception in SQL.get_comment: {e}')
 
+    # File
+    def get_file(self, author_id, reply_id):
+        try:
+            command = '''SELECT * FROM file WHERE (author_id, reply_id) IN ((%s, %s), (%s, %s))  ORDER BY time ASC'''
+            author_id = str(author_id)
+            reply_id = str(reply_id)
+            result = self.command(command, (author_id, reply_id, reply_id, author_id))
+            return result
+        except Exception as e:
+            logger.error(f'Other exception in SQL.get_file: {e}')
+
+    # Friend
     def get_friend_status(self, user_id, friend_id):
         try:
             command = '''SELECT * FROM friend WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
@@ -142,16 +175,6 @@ class SQL:
         except Exception as e:
             logger.error(f'Other exception in SQL.find_friend: {e}')
 
-    def delete_info(self, table: str, key: str, value):
-        try:
-            command = '''DELETE FROM %s WHERE %s="%s"'''
-            value = str(value)
-            command %= table, key, value
-            result = self.command(command, ())
-            return result
-        except Exception as e:
-            logger.error(f'Other exception in SQL.delete_info: {e}')
-
     def delete_friend(self, user_id, friend_id):
         try:
             command = '''DELETE FROM comment WHERE (user_id, friend_id) IN ((%s, %s), (%s, %s))'''
@@ -161,16 +184,6 @@ class SQL:
             return result
         except Exception as e:
             logger.error(f'Other exception in SQL.delete_friend: {e}')
-
-    def get_table(self, table: str):
-        try:
-            command = "SELECT * FROM " + table
-            result = self.command(command, ())
-            if result:
-                logger.info(f'Result in table {table}: {result}')
-            return result
-        except Exception as e:
-            logger.error(f'Other exception in SQL.get_table: {e}')
 
     def update_friend(self, key, value, user_id, friend_id):
         try:
@@ -183,7 +196,7 @@ class SQL:
         except Exception as e:
             logger.error(f'Other exception in SQL.update_friend: {e}')
 
-    def find_friend_request(self, user_id):
+    def get_friend_request(self, user_id):
         try:
             user_id = str(user_id)
             command = '''SELECT * FROM friend WHERE user_id=%s AND status="P"'''
@@ -192,8 +205,9 @@ class SQL:
             friend_request = self.command(command, (user_id,))
             return user_request, friend_request
         except Exception as e:
-            logger.error(f'Other exception in SQL.find_friend_request: {e}')
+            logger.error(f'Other exception in SQL.get_friend_request: {e}')
 
+    # Voice Call
     def find_directory(self, user_id):
         try:
             command = '''SELECT * FROM directory WHERE user_id=%s'''

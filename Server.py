@@ -153,7 +153,7 @@ class Server:
     def get_comment(self, author_id, reply_id):
         try:
             with self.lock:
-                comment = self.database.find_comment(author_id, reply_id)
+                comment = self.database.get_comment(author_id, reply_id)
             return comment
         except Exception as e:
             print(f'[ERROR] Other exception in server.get_comment: {e}')
@@ -261,7 +261,7 @@ class Server:
             logger.error(f'Other exception in server.friend_request: {e}')
 
     def find_friend_request(self, user_id):
-        return self.database.find_friend_request(user_id)
+        return self.database.get_friend_request(user_id)
 
     def register_directory(self, user_id, ip, port):
         try:

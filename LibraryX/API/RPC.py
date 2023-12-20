@@ -134,8 +134,8 @@ class Client(threading.Thread):
     def send_friend_request(self, user_id, friend, status):
         return self.proxy.send_friend_request(user_id, friend, status)
 
-    def find_friend_request(self, user_id):
-        return self.proxy.find_friend_request(user_id)
+    def get_friend_request(self, user_id):
+        return self.proxy.get_friend_request(user_id)
 
     def friend_list(self, user_id):
         return self.proxy.friend_list(user_id)
