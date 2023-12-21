@@ -332,12 +332,13 @@ class HomePanel(QWidget):
                     file_id = message.file_id
                     filename = message.name
                     file_type = message.type
+                    save_filename = str(file_id) + '.' + file_type
                     match file_type:
                         case "wav":
                             form = File.FilePanel(message_author, message_time, "")
                             form.File_Button.setIcon(QIcon(r".\UI\play.png"))
                             form.File_Button.setIconSize(form.File_Button.sizeHint())
-                            file_path = os.path.join(temp_path, filename)
+                            file_path = os.path.join(temp_path, save_filename)
                             if not os.path.exists(file_path):
                                 self.api.receive_file(file_path, file_id)
                             font.setPointSize(12)
@@ -348,7 +349,7 @@ class HomePanel(QWidget):
                             form.Image_label.deleteLater()
                         case "jpg" | "png":
                             form = File.FilePanel(message_author, message_time, "")
-                            file_path = os.path.join(temp_path, filename)
+                            file_path = os.path.join(temp_path, save_filename)
                             if not os.path.exists(file_path):
                                 self.api.receive_file(file_path, file_id)
                             image = QImage(file_path)
@@ -365,7 +366,7 @@ class HomePanel(QWidget):
                             form.File_Button.deleteLater()
                         case "gif":
                             form = File.FilePanel(message_author, message_time, "")
-                            file_path = os.path.join(temp_path, filename)
+                            file_path = os.path.join(temp_path, save_filename)
                             if not os.path.exists(file_path):
                                 self.api.receive_file(file_path, file_id)
                             movie = QMovie(file_path)
