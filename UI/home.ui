@@ -28,12 +28,29 @@
       <widget class="QListWidget" name="Friend_listWidget"/>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="9,1">
+      <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,9,1">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>10</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
        <item>
         <widget class="QLabel" name="Username_label">
          <property name="font">
           <font>
            <family>Arial</family>
+           <pointsize>15</pointsize>
           </font>
          </property>
          <property name="text">
@@ -89,7 +106,7 @@ qproperty-iconSize: 15px;
          <property name="font">
           <font>
            <family>Arial</family>
-           <pointsize>12</pointsize>
+           <pointsize>15</pointsize>
           </font>
          </property>
          <property name="text">
@@ -132,6 +149,10 @@ qproperty-iconSize: 15px;
            <family>Arial</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">qproperty-icon: url(./UI/phone.png);
+qproperty-iconSize: 20px;</string>
          </property>
          <property name="text">
           <string>Voice
@@ -189,8 +210,12 @@ Call !</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="styleSheet">
+          <string notr="true">qproperty-icon: url(./UI/add_file.png);
+qproperty-iconSize: 30px;</string>
+         </property>
          <property name="text">
-          <string>+</string>
+          <string/>
          </property>
         </widget>
        </item>

@@ -160,8 +160,6 @@ class Server:
                 self.database.insert_info("file",
                                           {"name": filename, "type": file_type, "data": file_content.data,
                                            "author_id": author_id, "reply_id": reply_id})
-            with open(r"D:\GitHub\Networking-Final\File\server\server_receive.jpg", "wb") as file:
-                file.write(file_content.data)
             return True
         except Exception as e:
             logger.error(f'Other exception in server.receive_file: {e}')

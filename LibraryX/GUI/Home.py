@@ -11,7 +11,7 @@ import re
 import sys
 import threading
 from PyQt6 import QtGui
-from PyQt6.QtGui import QIcon, QPixmap, QImage
+from PyQt6.QtGui import QIcon, QPixmap, QImage, QMovie
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
@@ -19,8 +19,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpace
 from LibraryX.Extra import Audio, VoIP
 from LibraryX.GUI import Comment, File, Friend
 
-client_path = r"D:\GitHub\Networking-Final\File\client"
-
+temp_path = r"D:\GitHub\Networking-Final\File\temp"
+max_width = 400
+max_height = 300
 
 class HomePanel(QWidget):
     pop_msgbox_signal = pyqtSignal(str, str, str)
@@ -336,37 +337,45 @@ class HomePanel(QWidget):
                             form = File.FilePanel(message_author, message_time, "")
                             form.File_Button.setIcon(QIcon(r".\UI\play.png"))
                             form.File_Button.setIconSize(form.File_Button.sizeHint())
-                            file_path = os.path.join(client_path, filename)
-                            self.api.receive_file(file_path, file_id)
+                            file_path = os.path.join(temp_path, filename)
+                            if not os.path.exists(file_path):
+                                self.api.receive_file(file_path, file_id)
                             font.setPointSize(12)
                             form.File_Button.setFlat(True)
                             form.File_Button.setFont(font)
                             form.File_Button.setProperty("file_path", file_path)
                             form.File_Button.clicked.connect(self.play_audio_message)
                             form.Image_label.deleteLater()
-                        case "jpg":
+                        case "jpg" | "png":
                             form = File.FilePanel(message_author, message_time, "")
-                            file_path = os.path.join(client_path, filename)
-                            self.api.receive_file(file_path, file_id)
+                            file_path = os.path.join(temp_path, filename)
+                            if not os.path.exists(file_path):
+                                self.api.receive_file(file_path, file_id)
                             image = QImage(file_path)
-                            # pixmap = QPixmap(file_path)
-                            # form.Graph_label.setPixmap(pixmap)
-                            # form.Graph_label.setScaledContents(True)
-                            # form.Graph_label.setMaximumSize(200, 100)
 
                             # Scale the image to fit within a maximum size while maintaining its aspect ratio
-                            max_width = 600
-                            max_height = 400
+
                             scaled_image = image.scaled(max_width, max_height,
                                                         aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,
                                                         transformMode=Qt.TransformationMode.SmoothTransformation)
 
-                            # Set the scaled image on the label
                             form.Image_label.setPixmap(QPixmap.fromImage(scaled_image))
-
-                            # Set the maximum size for the QLabel
                             form.Image_label.setMaximumSize(max_width, max_height)
 
+                            form.File_Button.deleteLater()
+                        case "gif":
+                            form = File.FilePanel(message_author, message_time, "")
+                            file_path = os.path.join(temp_path, filename)
+                            if not os.path.exists(file_path):
+                                self.api.receive_file(file_path, file_id)
+                            movie = QMovie(file_path)
+                            # movie.setScaledSize(form.Image_label.size())
+                            form.Image_label.setScaledContents(True)
+                            form.Image_label.setMovie(movie)
+                            movie.jumpToFrame(0)
+                            original_size = movie.currentPixmap().size()
+                            form.Image_label.setFixedSize(original_size)
+                            movie.start()
                             form.File_Button.deleteLater()
                         case _:
                             form = File.FilePanel(message_author, message_time, filename)
@@ -387,16 +396,16 @@ class HomePanel(QWidget):
                 form.Time_label.setFont(font)
                 font.setBold(True)
                 form.Author_label.setFont(font)
-                # if message.is_file:
-                #     form.setProperty("file_id", file_id)
-                # else:
-                #     form.setProperty("comment_id", comment_id)
 
                 self.scroll_area_layout.addWidget(form)
 
             self.scroll_area_layout.addStretch()
             self.scroll_area_widget.setLayout(self.scroll_area_layout)
             self.scrollArea.setWidget(self.scroll_area_widget)
+
+            scrollbar = self.scrollArea.verticalScrollBar()
+            if scrollbar.minimum() != scrollbar.maximum():
+                scrollbar.setValue(scrollbar.maximum())
             return
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
