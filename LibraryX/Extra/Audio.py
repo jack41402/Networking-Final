@@ -73,27 +73,31 @@ class AudioUtils:
 
     # play the voice record by file
     def play(self, filename):
-        # open wave file
-        self.logger.info(f"Trying to play wav file: {filename}")
-        wf = wave.open(filename, 'rb')
+        try:
+            # open wave file
+            self.logger.info(f"Trying to play wav file: {filename}")
+            wf = wave.open(filename, 'rb')
 
-        # Open a stream to play audio
-        stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
-                                 channels=wf.getnchannels(),
-                                 rate=wf.getframerate(),
-                                 output=True)
+            # Open a stream to play audio
+            stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+                                     channels=wf.getnchannels(),
+                                     rate=wf.getframerate(),
+                                     output=True)
 
-        # Read data in chunks and play
-        data = wf.readframes(self.CHUNK)
-        while data:
-            stream.write(data)
+            # Read data in chunks and play
             data = wf.readframes(self.CHUNK)
+            while data:
+                stream.write(data)
+                data = wf.readframes(self.CHUNK)
 
-        # Close the stream and PyAudio instance
-        stream.stop_stream()
-        stream.close()
-        self.audio.terminate()
-        return
+            # Close the stream and PyAudio instance
+            stream.stop_stream()
+            stream.close()
+            self.audio.terminate()
+            return
+        except Exception as e:
+            self.logger.error(f'Other exception in Audio.play: {e}')
+            print("Line no: ", e.__traceback__.tb_lineno)
 
 
 if __name__ == "__main__":

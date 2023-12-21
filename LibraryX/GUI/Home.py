@@ -266,7 +266,6 @@ class HomePanel(QWidget):
             file_id = button.property("file_id")
             filename = button.property("filename")
             file_path, extension = QFileDialog.getSaveFileName(self, "Save File", filename)
-            print(extension)
             if file_path:
                 self.logger.info(f"File path selected: {file_path}")
 
@@ -347,7 +346,7 @@ class HomePanel(QWidget):
                             form.File_Button.setProperty("file_path", file_path)
                             form.File_Button.clicked.connect(self.play_audio_message)
                             form.Image_label.deleteLater()
-                        case "jpg" | "png":
+                        case "jpg" | "jpeg" | "png":
                             form = File.FilePanel(message_author, message_time, "")
                             file_path = os.path.join(temp_path, save_filename)
                             if not os.path.exists(file_path):
