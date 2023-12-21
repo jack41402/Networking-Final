@@ -212,13 +212,11 @@ class HomePanel(QWidget):
     def send_audio_message(self, audio_file_path):
         try:
             if self.current_item is not None:
-                author = self.api.username
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
+                author_id = self.api.username
                 reply_id = friend["user_id"]
                 if os.path.exists(audio_file_path):
-                    content = re.split(r"\\", audio_file_path)[-1]
-                    self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
-                    self.api.send_file(audio_file_path)
+                    self.api.send_file(audio_file_path, author_id, reply_id)
                 else:
                     self.logger.error(f"CAN'T FIND FILE PATH OF {audio_file_path}")
                 self.render_message(self.current_item)
@@ -226,7 +224,7 @@ class HomePanel(QWidget):
             else:
                 return False
         except Exception as e:
-            self.logger.error(f'Other exception in Home.send_file: {e}')
+            self.logger.error(f'Other exception in Home.send_audio_message: {e}')
 
     # play a received audio message
     def play_audio_message(self):
@@ -241,15 +239,13 @@ class HomePanel(QWidget):
             if self.current_item is not None:
                 file_paths, filetype = QFileDialog.getOpenFileNames()
                 self.logger.info(f"Open filename {file_paths}, filetype {filetype}.")
-                author = self.api.username
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
+                author_id = self.api.username
                 reply_id = friend["user_id"]
 
                 for file_path in file_paths:
                     if os.path.exists(file_path):
-                        content = re.split(r"/", file_path)[-1]
-                        self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": True})
-                        self.api.send_file(file_path)
+                        self.api.send_file(file_path, author_id, reply_id)
                     else:
                         self.logger.error(f"CAN'T FIND FILE PATH OF {file_path}")
                 self.render_message(self.current_item)
@@ -272,7 +268,7 @@ class HomePanel(QWidget):
             self.logger.error(f'Other exception in Home.receive_file: {e}')
 
     # send the text message to server
-    def send_message(self, is_file):
+    def send_message(self):
         try:
             self.logger.info("Trying to send the message to server")
             if self.current_item is not None:
@@ -282,7 +278,7 @@ class HomePanel(QWidget):
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
                 reply_id = friend["user_id"]
 
-                self.api.send({"author": author, "content": content, "reply_id": reply_id, "is_file": False})
+                self.api.comment({"author": author, "content": content, "reply_id": reply_id})
 
                 self.render_message(self.current_item)
                 return True
@@ -308,49 +304,50 @@ class HomePanel(QWidget):
             self.scroll_area_layout.setSpacing(0)
 
             comments = self.api.get_comment(self.api.user_id, friend_id)
-            for comment in comments:
+            files = self.api.get_file(self.api.user_id, friend_id)
+            messages = self.message_list(comments, files)
+
+            for message in messages:
                 font = QtGui.QFont()
                 today = datetime.date.today()
                 time_delta = datetime.timedelta(days=1)
 
-                comment_id = comment[0]
-                is_file = comment[3]
-                comment_author_id = comment[4]
-                comment_author = self.api.username if comment_author_id == self.api.user_id else friend["username"]
-                comment_time = datetime.datetime.strptime(str(comment[2]), '%Y%m%dT%H:%M:%S')
-                if comment_time.date() == today:
-                    comment_time = comment_time.strftime("Today %H:%M")
-                elif comment_time.date() == today - time_delta:
-                    comment_time = comment_time.strftime("Yesterday %H:%M")
+                message_author = self.api.username if message.author_id == self.api.user_id else friend_name
+                message_time = message.time
+                if message_time.date() == today:
+                    message_time = message_time.strftime("Today %H:%M")
+                elif message_time.date() == today - time_delta:
+                    message_time = message_time.strftime("Yesterday %H:%M")
                 else:
-                    comment_time = comment_time.strftime("%Y/%M/%d %H:%M")
-
-                if is_file:
-                    filename = comment[1]
-                    file_type = re.split(r"\.", filename)[-1]
+                    message_time = message_time.strftime("%Y/%M/%d %H:%M")
+                
+                if message.is_file:
+                    file_id = message.file_id
+                    filename = message.name
+                    file_type = message.type
                     print(filename)
                     print(file_type)
                     match file_type:
                         case "wav":
-                            form = File.FilePanel(comment_author, comment_time, "")
+                            form = File.FilePanel(message_author, message_time, "")
                             form.File_Button.setIcon(QIcon(r".\UI\play.png"))
                             form.File_Button.setIconSize(form.File_Button.sizeHint())
                             file_path = os.path.join(client_path, filename)
                             print(file_path)
-                            self.api.receive_file(file_path, comment_id)
+                            self.api.receive_file(file_path, file_id)
                             font.setPointSize(12)
                             form.File_Button.setFont(font)
                             form.File_Button.setProperty("file_path", file_path)
                             form.File_Button.clicked.connect(self.play_audio_message)
                         case _:
-                            form = File.FilePanel(comment_author, comment_time, filename)
+                            form = File.FilePanel(message_author, message_time, filename)
                             font.setPointSize(12)
                             form.File_Button.setFont(font)
-                            form.File_Button.setProperty("comment_id", comment_id)
+                            form.File_Button.setProperty("comment_id", file_id)
                             form.File_Button.clicked.connect(self.receive_file)
                 else:
                     comment_content = comment[1]
-                    form = Comment.CommentPanel(comment_author, comment_time, comment_content)
+                    form = Comment.CommentPanel(message_author, message_time, comment_content)
                     form.Comment_label.setFont(font)
                 font.setPointSize(9)
                 form.Time_label.setFont(font)
@@ -366,6 +363,24 @@ class HomePanel(QWidget):
             return
         except Exception as e:
             self.logger.error(f'Other exception in Home.render_message: {e}')
+
+    def message_list(self, comments, files):
+        try:
+            messages = []
+            print("Comments type:", type(comments))
+            print("Files type:", type(files))
+            if len(comments):
+                for i in range(len(comments)):
+                    comments[i] = Message(comments[i], False)
+            if len(files):
+                for i in range(len(files)):
+                    files[i] = Message(files[i], True)
+            messages = comments + files
+            messages.sort()
+            self.logger.info(f"Message list: {messages}")
+            return messages
+        except Exception as e:
+            self.logger.error(f'Other exception in Home.message_list: {e}')
 
     # render friend list
     def friend_list(self):
@@ -428,3 +443,31 @@ class HomePanel(QWidget):
     def closeEvent(self, event):
         self.api.delete_directory(self.api.user_id)
         event.accept()
+
+
+class Message:
+    def __init__(self, message, is_file):
+        self.reply_id = None
+        self.author_id = None
+        self.time = None
+        self.is_file = is_file
+        self.file(message) if is_file else self.comment(message)
+
+    def comment(self, message):
+        self.comment_id = message[0]
+        self.content = message[1]
+        self.time = datetime.datetime.strptime(str(message[2]), '%Y%m%dT%H:%M:%S')
+        self.author_id = message[3]
+        self.reply_id = message[4]
+
+    def file(self, message):
+        self.file_id = message[0]
+        self.name = message[1]
+        self.type = message[2]
+        self.data = message[3]
+        self.time = datetime.datetime.strptime(str(message[4]), '%Y%m%dT%H:%M:%S')
+        self.author_id = message[5]
+        self.reply_id = message[6]
+
+    def __lt__(self, other):
+        return self.time < other.time

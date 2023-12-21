@@ -33,7 +33,7 @@ class Server:
 
     def start(self):
         self.thread.start()
-    
+
     def run(self):
         try:
             self.connection()
@@ -66,7 +66,7 @@ class Server:
             self.server.register_function(self.send_file, "send_file")
             self.server.register_function(self.find_friend, "find_friend")
             self.server.register_function(self.send_friend_request, "send_friend_request")
-            self.server.register_function(self.find_friend_request, "find_friend_request")
+            self.server.register_function(self.get_friend_request, "find_friend_request")
             self.server.register_function(self.register_directory, "register_directory")
             self.server.register_function(self.find_directory, "find_directory")
             self.server.register_function(self.delete_directory, "delete_directory")
@@ -143,13 +143,6 @@ class Server:
         except Exception as e:
             logger.error(f'Other exception in server.comment: {e}')
 
-    def friend(self, user_id, friend_id):
-        try:
-            self.database.insert_info("friend", {"user_id": user_id, "friend_id": friend_id})
-            return True
-        except Exception as e:
-            logger.error(f'Other exception in server.friend: {e}')
-
     def get_comment(self, author_id, reply_id):
         try:
             with self.lock:
@@ -157,6 +150,53 @@ class Server:
             return comment
         except Exception as e:
             print(f'[ERROR] Other exception in server.get_comment: {e}')
+
+    def get_file(self, author_id, reply_id):
+        try:
+            with self.lock:
+                file = self.database.get_file(author_id, reply_id)
+            return file
+        except Exception as e:
+            print(f'[ERROR] Other exception in server.get_file: {e}')
+
+    # Function to receive and save the file on the server
+    def receive_file(self, filename, file_type, file_content, author_id, reply_id):
+        try:
+            logger.info(f"Server: Filename: {filename}, File type: {file_type}, File content: {file_content}")
+            logger.info(f"Server: author_id: {author_id}, reply_id: {reply_id}")
+            with self.lock:
+                self.database.insert_info("file",
+                                          {"name": filename, "type": file_type, "data": file_content,
+                                           "author_id": author_id, "reply_id": reply_id})
+            return True
+        except Exception as e:
+            logger.error(f'Other exception in server.receive_file: {e}')
+
+    # Function to send a file content to the client
+    def send_file(self, file_id):
+        try:
+            file_info = self.database.find_info("comment", "comment_id", file_id)[0]
+            filename = file_info[1]
+            file_type = re.split("[\\\.]", filename)[-1]
+            server_filename = str(str(file_info[0]) + '.' + file_type)
+            file_path = os.path.join(main_path, server_filename)
+            if file_type == "wav":
+                rate, data = wavfile.read('./output/audio.wav')
+                return rate, data
+            else:
+                with open(file_path, 'rb') as file:
+                    file_content = file.read()
+                    file_content_base64 = client.Binary(file_content)
+                return file_content_base64
+        except Exception as e:
+            logger.error(f'Other exception in server.send_file: {e}')
+
+    def friend(self, user_id, friend_id):
+        try:
+            self.database.insert_info("friend", {"user_id": user_id, "friend_id": friend_id})
+            return True
+        except Exception as e:
+            logger.error(f'Other exception in server.friend: {e}')
 
     def friend_list(self, user_id):
         try:
@@ -209,43 +249,6 @@ class Server:
     def find_username(self, username: str):
         return self.database.find_info("user_information", "username", username)
 
-    # Function to receive and save the file on the server
-    def receive_file(self, filename, file_content):
-        try:
-            file_type = re.split(r"\.", filename)[-1]
-            file_info = self.database.find_info("comment", "content", filename)[-1]
-            server_filename = str(str(file_info[0]) + '.' + file_type)
-            file_path = os.path.join(main_path, server_filename)
-            logger.info(
-                f"Server filename: {server_filename}, File type: {file_type}, File info: {file_info}, File path: {file_path}")
-            if file_type == "wav":
-                wavfile.write(file_path, file_content[0], file_content[1])
-            else:
-                with open(file_path, 'wb') as file:
-                    file.write(file_content.data)
-                return True
-        except Exception as e:
-            logger.error(f'Other exception in server.receive_file: {e}')
-
-    # Function to send a file content to the client
-    def send_file(self, file_id):
-        try:
-            file_info = self.database.find_info("comment", "comment_id", file_id)[0]
-            filename = file_info[1]
-            file_type = re.split("[\\\.]", filename)[-1]
-            server_filename = str(str(file_info[0]) + '.' + file_type)
-            file_path = os.path.join(main_path, server_filename)
-            if file_type == "wav":
-                rate, data = wavfile.read('./output/audio.wav')
-                return rate, data
-            else:
-                with open(file_path, 'rb') as file:
-                    file_content = file.read()
-                    file_content_base64 = client.Binary(file_content)
-                return file_content_base64
-        except Exception as e:
-            logger.error(f'Other exception in server.delete: {e}')
-
     def find_friend(self, user_id, username):
         return self.database.find_friend(user_id, username)
 
@@ -260,7 +263,7 @@ class Server:
         except Exception as e:
             logger.error(f'Other exception in server.friend_request: {e}')
 
-    def find_friend_request(self, user_id):
+    def get_friend_request(self, user_id):
         return self.database.get_friend_request(user_id)
 
     def register_directory(self, user_id, ip, port):
