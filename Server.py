@@ -62,6 +62,7 @@ class Server:
             self.server.register_function(self.delete, "delete")
             self.server.register_function(self.find_user_id, "find_user_id")
             self.server.register_function(self.find_username, "find_username")
+            self.server.register_function(self.get_file, "get_file")
             self.server.register_function(self.receive_file, "receive_file")
             self.server.register_function(self.send_file, "send_file")
             self.server.register_function(self.find_friend, "find_friend")
@@ -72,9 +73,9 @@ class Server:
             self.server.register_function(self.delete_directory, "delete_directory")
             self.server.register_function(self.delete_whole_directory, "delete_whole_directory")
             logger.info("Function login, register, comment, friend, get_comment, friend_list, delete, find_user_id, "
-                        "find_username, receive_file, send_file, find_friend, send_friend_request, find_friend_request, "
-                        "register_directory, find_directory, delete_directory, and delete_whole_directory "
-                        "have been registered.")
+                        "find_username, get_file, receive_file, send_file, find_friend, send_friend_request, "
+                        "find_friend_request, register_directory, find_directory, delete_directory, "
+                        "and delete_whole_directory have been registered.")
             # print(self.server.system_listMethods())
         except Exception as e:
             logger.error(f'Other exception in server.function_registry: {e}')
@@ -124,21 +125,13 @@ class Server:
         except Exception as e:
             logger.error(f'Other exception in server.register: {e}')
 
-    def comment(self, author: str, content: str, reply_id: int, is_file: bool):
+    def comment(self, content: str, author_id: int, reply_id: int):
         try:
             if not content:
                 logger.error("COMMENT CAN'T BE EMPTY.")
                 return False
             with self.lock:
-                author_id = self.database.find_info("user_information", "username", author)
-            if len(author_id) != 0:
-                author_id = author_id[0][0]
-            else:
-                logger.error(f'UNEXPECTED USER {author}.')
-                return False
-            with self.lock:
-                self.database.insert_info("comment", {"content": content, "is_file": is_file, "author_id": author_id,
-                                                      "reply_id": reply_id})
+                self.database.insert_info("comment", {"content": content, "author_id": author_id, "reply_id": reply_id})
             return True
         except Exception as e:
             logger.error(f'Other exception in server.comment: {e}')
@@ -175,19 +168,8 @@ class Server:
     # Function to send a file content to the client
     def send_file(self, file_id):
         try:
-            file_info = self.database.find_info("comment", "comment_id", file_id)[0]
-            filename = file_info[1]
-            file_type = re.split("[\\\.]", filename)[-1]
-            server_filename = str(str(file_info[0]) + '.' + file_type)
-            file_path = os.path.join(main_path, server_filename)
-            if file_type == "wav":
-                rate, data = wavfile.read('./output/audio.wav')
-                return rate, data
-            else:
-                with open(file_path, 'rb') as file:
-                    file_content = file.read()
-                    file_content_base64 = client.Binary(file_content)
-                return file_content_base64
+            file_info = self.database.find_info("file", "file_id", file_id)[0]
+            return file_info
         except Exception as e:
             logger.error(f'Other exception in server.send_file: {e}')
 

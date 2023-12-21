@@ -53,7 +53,7 @@ class Client(threading.Thread):
 
     def comment(self, info):
         try:
-            return self.proxy.comment(info["author"], info["content"], info["reply_id"], info["is_file"])
+            return self.proxy.comment(info["content"], info["author_id"], info["reply_id"])
         except Exception as e:
             self.logger.error(f'Other exception in RPC.comment: {e}')
 
@@ -100,13 +100,12 @@ class Client(threading.Thread):
 
     def receive_file(self, file_path, file_id):
         try:
-            file_content = self.proxy.send_file(file_id)
-            file_type = re.split(r"\.", file_path)[-1]
-            if file_type == "wav":
-                rate, data = wavfile.write(file_path, file_content[0], file_content[1])
-            else:
-                with open(file_path, 'wb') as received_file:
-                    received_file.write(file_content.data)
+            file_info = self.proxy.send_file(file_id)
+            filename = file_info[1]
+            file_type = file_info[2]
+            file_data = file_info[3].data
+            with open(file_path, 'wb') as received_file:
+                received_file.write(file_data)
         except Exception as e:
             self.logger.error(f'Other exception in RPC.receive_file: {e}')
 
@@ -117,7 +116,6 @@ class Client(threading.Thread):
             file_type = re.split(r"\.", file_path)[-1]
             with open(file_path, 'rb') as file:
                 file_content = file.read()
-                self.logger.info(f"File content: {file_content}")
                 # self.proxy.receive_file(filename, xmlrpc.client.Binary(file_content))
                 self.proxy.receive_file(filename, file_type, file_content, author_id, reply_id)
         except Exception as e:
@@ -128,8 +126,6 @@ class Client(threading.Thread):
 
     def find_username(self, username: str):
         return self.proxy.find_username(username)
-
-
 
     def find_friend(self, user_id, username):
         return self.proxy.find_friend(user_id, username)

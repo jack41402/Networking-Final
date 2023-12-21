@@ -240,7 +240,7 @@ class HomePanel(QWidget):
                 file_paths, filetype = QFileDialog.getOpenFileNames()
                 self.logger.info(f"Open filename {file_paths}, filetype {filetype}.")
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
-                author_id = self.api.username
+                author_id = self.api.user_id
                 reply_id = friend["user_id"]
 
                 for file_path in file_paths:
@@ -258,11 +258,14 @@ class HomePanel(QWidget):
     # download file from server
     def receive_file(self):
         try:
-            file_path, _ = QFileDialog.getSaveFileName(self, "Save File", "", "All Files (*);;Text Files (*.txt)")
+            button = self.app.sender()
+            file_id = button.property("file_id")
+            filename = button.property("filename")
+            file_path, extension = QFileDialog.getSaveFileName(self, "Save File", filename)
+            print(extension)
             if file_path:
                 self.logger.info(f"File path selected: {file_path}")
-                button = self.app.sender()
-                file_id = button.property("comment_id")
+
                 self.api.receive_file(file_path, file_id)
         except Exception as e:
             self.logger.error(f'Other exception in Home.receive_file: {e}')
@@ -272,13 +275,13 @@ class HomePanel(QWidget):
         try:
             self.logger.info("Trying to send the message to server")
             if self.current_item is not None:
-                author = self.api.username
-                content = self.Comment_textEdit.toPlainText().strip()
-                self.Comment_textEdit.clear()
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
+                content = self.Comment_textEdit.toPlainText().strip()
                 reply_id = friend["user_id"]
+                author_id = self.api.user_id
+                self.Comment_textEdit.clear()
 
-                self.api.comment({"author": author, "content": content, "reply_id": reply_id})
+                self.api.comment({"content": content, "author_id": author_id, "reply_id": reply_id})
 
                 self.render_message(self.current_item)
                 return True
@@ -319,21 +322,18 @@ class HomePanel(QWidget):
                 elif message_time.date() == today - time_delta:
                     message_time = message_time.strftime("Yesterday %H:%M")
                 else:
-                    message_time = message_time.strftime("%Y/%M/%d %H:%M")
+                    message_time = message_time.strftime("%Y/%m/%d %H:%M")
                 
                 if message.is_file:
                     file_id = message.file_id
                     filename = message.name
                     file_type = message.type
-                    print(filename)
-                    print(file_type)
                     match file_type:
                         case "wav":
                             form = File.FilePanel(message_author, message_time, "")
                             form.File_Button.setIcon(QIcon(r".\UI\play.png"))
                             form.File_Button.setIconSize(form.File_Button.sizeHint())
                             file_path = os.path.join(client_path, filename)
-                            print(file_path)
                             self.api.receive_file(file_path, file_id)
                             font.setPointSize(12)
                             form.File_Button.setFont(font)
@@ -343,17 +343,22 @@ class HomePanel(QWidget):
                             form = File.FilePanel(message_author, message_time, filename)
                             font.setPointSize(12)
                             form.File_Button.setFont(font)
-                            form.File_Button.setProperty("comment_id", file_id)
+                            form.File_Button.setProperty("file_id", file_id)
+                            form.File_Button.setProperty("filename", filename)
                             form.File_Button.clicked.connect(self.receive_file)
                 else:
-                    comment_content = comment[1]
-                    form = Comment.CommentPanel(message_author, message_time, comment_content)
+                    comment_id = message.comment_id
+                    message_content = message.content
+                    form = Comment.CommentPanel(message_author, message_time, message_content)
                     form.Comment_label.setFont(font)
                 font.setPointSize(9)
                 form.Time_label.setFont(font)
                 font.setBold(True)
                 form.Author_label.setFont(font)
-                form.setProperty("comment_id", comment_id)
+                # if message.is_file:
+                #     form.setProperty("file_id", file_id)
+                # else:
+                #     form.setProperty("comment_id", comment_id)
 
                 self.scroll_area_layout.addWidget(form)
 
@@ -367,8 +372,6 @@ class HomePanel(QWidget):
     def message_list(self, comments, files):
         try:
             messages = []
-            print("Comments type:", type(comments))
-            print("Files type:", type(files))
             if len(comments):
                 for i in range(len(comments)):
                     comments[i] = Message(comments[i], False)
@@ -377,7 +380,6 @@ class HomePanel(QWidget):
                     files[i] = Message(files[i], True)
             messages = comments + files
             messages.sort()
-            self.logger.info(f"Message list: {messages}")
             return messages
         except Exception as e:
             self.logger.error(f'Other exception in Home.message_list: {e}')
@@ -426,7 +428,6 @@ class HomePanel(QWidget):
             return
 
         except Exception as e:
-            print(e.__traceback__.tb_lineno)
             self.logger.error(f'Other exception in Home.voice_call: {e}')
 
     # bind return and enter key to send button

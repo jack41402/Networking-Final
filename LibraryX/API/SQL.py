@@ -61,9 +61,9 @@ class SQL:
                     self.command(command, (info["content"], info["author_id"], info["reply_id"]))
                     logger.info("Insert into comment successfully.")
                 case "file":
-                    command = "INSERT INTO comment(name, type, data, time, author_id, reply_id) VALUES(%s, %s, %s, NOW(), %s, %s)"
+                    command = "INSERT INTO file(name, type, data, time, author_id, reply_id) VALUES(%s, %s, %s, NOW(), %s, %s)"
                     self.command(command,(info["name"], info["type"], info["data"], info["author_id"], info["reply_id"]))
-                    logger.info("Insert into comment successfully.")
+                    logger.info("Insert into file successfully.")
                 case "directory":
                     command = "INSERT INTO directory(user_id, ip, port) VALUES(%s, %s, %s)"
                     self.command(command, (info["user_id"], info["ip"], info["port"]))
