@@ -155,12 +155,13 @@ class Server:
     # Function to receive and save the file on the server
     def receive_file(self, filename, file_type, file_content, author_id, reply_id):
         try:
-            logger.info(f"Server: Filename: {filename}, File type: {file_type}, File content: {file_content}")
-            logger.info(f"Server: author_id: {author_id}, reply_id: {reply_id}")
+            logger.info(f"Receive Filename: {filename}, File type: {file_type}")
             with self.lock:
                 self.database.insert_info("file",
-                                          {"name": filename, "type": file_type, "data": file_content,
+                                          {"name": filename, "type": file_type, "data": file_content.data,
                                            "author_id": author_id, "reply_id": reply_id})
+            with open(r"D:\GitHub\Networking-Final\File\server\server_receive.jpg", "wb") as file:
+                file.write(file_content.data)
             return True
         except Exception as e:
             logger.error(f'Other exception in server.receive_file: {e}')

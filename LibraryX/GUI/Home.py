@@ -9,8 +9,9 @@ import logging
 import os.path
 import re
 import sys
+import threading
 from PyQt6 import QtGui
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QPixmap, QImage
 from PyQt6.uic import loadUi
 from PyQt6.QtCore import Qt, QSize, QEvent, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMessageBox, QSpacerItem, QSizePolicy, QListWidgetItem, \
@@ -230,7 +231,9 @@ class HomePanel(QWidget):
     def play_audio_message(self):
         button = self.app.sender()
         file_path = button.property("file_path")
-        self.audio_agent.play(file_path)
+        play_audio_thread = threading.Thread(target=self.audio_agent.play, args=(file_path,))
+        play_audio_thread.start()
+        # self.audio_agent.play(file_path)
 
     # embed a file to message in order to send to the receiver
     def send_file(self):
@@ -323,7 +326,7 @@ class HomePanel(QWidget):
                     message_time = message_time.strftime("Yesterday %H:%M")
                 else:
                     message_time = message_time.strftime("%Y/%m/%d %H:%M")
-                
+
                 if message.is_file:
                     file_id = message.file_id
                     filename = message.name
@@ -336,16 +339,45 @@ class HomePanel(QWidget):
                             file_path = os.path.join(client_path, filename)
                             self.api.receive_file(file_path, file_id)
                             font.setPointSize(12)
+                            form.File_Button.setFlat(True)
                             form.File_Button.setFont(font)
                             form.File_Button.setProperty("file_path", file_path)
                             form.File_Button.clicked.connect(self.play_audio_message)
+                            form.Image_label.deleteLater()
+                        case "jpg":
+                            form = File.FilePanel(message_author, message_time, "")
+                            file_path = os.path.join(client_path, filename)
+                            self.api.receive_file(file_path, file_id)
+                            image = QImage(file_path)
+                            # pixmap = QPixmap(file_path)
+                            # form.Graph_label.setPixmap(pixmap)
+                            # form.Graph_label.setScaledContents(True)
+                            # form.Graph_label.setMaximumSize(200, 100)
+
+                            # Scale the image to fit within a maximum size while maintaining its aspect ratio
+                            max_width = 600
+                            max_height = 400
+                            scaled_image = image.scaled(max_width, max_height,
+                                                        aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,
+                                                        transformMode=Qt.TransformationMode.SmoothTransformation)
+
+                            # Set the scaled image on the label
+                            form.Image_label.setPixmap(QPixmap.fromImage(scaled_image))
+
+                            # Set the maximum size for the QLabel
+                            form.Image_label.setMaximumSize(max_width, max_height)
+
+                            form.File_Button.deleteLater()
                         case _:
                             form = File.FilePanel(message_author, message_time, filename)
+                            form.File_Button.setIcon(QIcon(r".\UI\file.png"))
+                            form.File_Button.setIconSize(form.File_Button.sizeHint())
                             font.setPointSize(12)
                             form.File_Button.setFont(font)
                             form.File_Button.setProperty("file_id", file_id)
                             form.File_Button.setProperty("filename", filename)
                             form.File_Button.clicked.connect(self.receive_file)
+                            form.Image_label.deleteLater()
                 else:
                     comment_id = message.comment_id
                     message_content = message.content

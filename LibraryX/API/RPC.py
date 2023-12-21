@@ -114,10 +114,12 @@ class Client(threading.Thread):
             self.logger.info(f"File path: {file_path}")
             filename = re.split(r"/", file_path)[-1]
             file_type = re.split(r"\.", file_path)[-1]
-            with open(file_path, 'rb') as file:
+            with open(file_path, 'rb') as file, open(r"D:\GitHub\Networking-Final\File\client\client_send.jpg", "wb") as f:
                 file_content = file.read()
+                f.write(file_content)
+
                 # self.proxy.receive_file(filename, xmlrpc.client.Binary(file_content))
-                self.proxy.receive_file(filename, file_type, file_content, author_id, reply_id)
+                self.proxy.receive_file(filename, file_type, xmlrpc.client.Binary(file_content), author_id, reply_id)
         except Exception as e:
             self.logger.error(f'Other exception in RPC.send_file: {e}')
 
