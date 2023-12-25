@@ -22,34 +22,14 @@ server <- sql: return user information
 rpc <- server: return user information
 hnote over rpc: verify user information
 client <- rpc: return verification
-alt
+alt register successfully
     gui <- client: verify successfully
-    hnote over gui: show Home Window
-else
+    &rpc -> server: register user information
+    server -> sql: insert user information
+    hnote over gui: show Login Window
+else register failed
     gui <- client: verify failed
     hnote over gui: clear line edit
 end
-alt
-    rpc -> server: register
-    server -> sql: register
-else
-    server -> client: true
-end
-@enduml
 
-@startuml
-!pragma teoz true
-A -> B: send
-&B -> C: send
-
-alt
-A <- B: receive
-else
-C <- A: receive
-end
-&alt
-A -> C: receive
-else
-B -> C: receive
-end
 @enduml
