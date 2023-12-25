@@ -1,0 +1,20 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+autonumber
+
+database "Database" as sql
+participant "Server" as server
+participant "RPC" as rpc
+participant "Client" as client
+
+server -> sql **: create MySQL instance
+server -> sql: connect to database
+server -> rpc **: create RPC instance
+server -> rpc: registry function
+server -> rpc: serve forever
+==Server Active==
+@enduml

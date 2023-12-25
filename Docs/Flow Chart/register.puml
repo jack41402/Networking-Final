@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: Register Button clicked
+gui -> client: send username, password,\nand confirm_password
+client -> rpc: request register verify
+rpc -> server: request user information
+server -> sql: request user information
+server <- sql: return user information
+rpc <- server: return user information
+hnote over rpc: verify user information
+client <- rpc: return verification
+alt
+    gui <- client: verify successfully
+    hnote over gui: show Home Window
+else
+    gui <- client: verify failed
+    hnote over gui: clear line edit
+end
+alt
+    rpc -> server: register
+    server -> sql: register
+else
+    server -> client: true
+end
+@enduml
+
+@startuml
+!pragma teoz true
+A -> B: send
+&B -> C: send
+
+alt
+A <- B: receive
+else
+C <- A: receive
+end
+&alt
+A -> C: receive
+else
+B -> C: receive
+end
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: start GUI instance
+gui -> client**: create Client instance
+client -> rpc: create proxy
+client -> rpc: connect to RPC
+==Show Login Window==
+
+@enduml
