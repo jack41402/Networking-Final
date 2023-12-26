@@ -1,0 +1,24 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: show Friend Window
+hnote over gui: send friend request
+gui -> client: send friend information
+client -> rpc: send friend request
+rpc -> server: update friend request
+server -> sql: insert friend request
+==Send Friend Request Done==
+
+@enduml

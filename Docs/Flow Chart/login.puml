@@ -21,12 +21,13 @@ server <- sql: return user information
 rpc <- server: return user information
 hnote over rpc: verify user information
 client <- rpc: return verification
-alt
+alt login successfully
     gui <- client: verify successfully
     hnote over gui: show Home Window
-else
+else login failed
     gui <- client: verify failed
     hnote over gui: clear line edit
 end
+==Login Done==
 
 @enduml

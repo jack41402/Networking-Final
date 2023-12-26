@@ -1,0 +1,44 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: show Friend Window
+hnote over gui: show friend request list
+==Respond to Friend Request==
+alt Accept Request
+    gui -> client: accept friend request
+else Reject Request
+    gui -> client: reject friend request
+else Pending Request
+    gui -x client: do nothing
+end
+client -> rpc: update friend request
+rpc -> server: update friend request
+alt Accept Request
+    server -> sql: build dual way friendship
+    server -> sql: change status to "A"
+else Reject Request
+    server -> sql: change status to "R"
+end
+==Update Friend Request==
+client -> rpc: fetch friend request
+rpc -> server: fetch friend request
+server -> sql: fetch friend request
+server <- sql: return friend request
+rpc <- server: return friend request
+client <- rpc: return friend request
+gui <- client: update friend request
+==Respond to Friend Request Done==
+
+@enduml

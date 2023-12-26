@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: show Friend Window
+hnote over gui: Typing in Search Bar
+gui -> client: send words
+client -> rpc: request find users
+rpc -> server: request match users
+server -> sql: request match users
+server <- sql: return match users
+rpc <- server: return match users
+client <- rpc: return match users
+gui <- client: pending user list
+hnote over gui: update Friend Window
+==Search User Done==
+@enduml

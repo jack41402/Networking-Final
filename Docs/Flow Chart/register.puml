@@ -31,5 +31,6 @@ else register failed
     gui <- client: verify failed
     hnote over gui: clear line edit
 end
+==Register Done==
 
 @enduml
