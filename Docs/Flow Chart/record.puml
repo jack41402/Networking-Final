@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: Record Button clicked
+gui -> client: start audio recording
+hnote over client: record file as wav
+hnote over gui: Stop Record Button clicked
+gui -> client: stop audio recording
+hnote over client: save wav file at temp file path
+hnote over client: convert audio file to Binary
+client -> rpc: request receive file
+rpc -> server: send Binary data
+hnote over server: parse filename and data
+server -> sql: insert file
+==Audio Record Done==
+
+@enduml

@@ -18,7 +18,7 @@ hnote over gui: send friend request
 gui -> client: send friend information
 client -> rpc: send friend request
 rpc -> server: update friend request
-server -> sql: insert friend request
+server -> sql: insert/update friend request
 ==Send Friend Request Done==
 
 @enduml

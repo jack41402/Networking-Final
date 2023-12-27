@@ -1,0 +1,36 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+participant "Receiver" as receiver order 5
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: Voice Call Button clicked
+gui -> caller: request voice call
+caller -> rpc: request receiver ringtone socket
+rpc -> server: request receiver ringtone socket
+server -> sql: request receiver ringtone socket
+server <- sql: return receiver ringtone socket
+rpc <- server: return receiver ringtone socket
+caller <- rpc: return receiver ringtone socket
+
+caller -> receiver: send dial request
+alt pick up
+    caller <- receiver: pick up phone call
+    caller <-> receiver: start voice call
+else hang up
+    caller <- receiver: hang up phone call
+    hnote over caller: voice call end
+end
+==Voice Call Done==
+
+@enduml

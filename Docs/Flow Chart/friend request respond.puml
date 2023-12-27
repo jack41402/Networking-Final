@@ -23,8 +23,8 @@ else Reject Request
 else Pending Request
     gui -x client: do nothing
 end
-client -> rpc: update friend request
-rpc -> server: update friend request
+client -> rpc: update friend status
+rpc -> server: update friend status
 alt Accept Request
     server -> sql: build dual way friendship
     server -> sql: change status to "A"
