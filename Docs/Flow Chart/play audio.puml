@@ -1,0 +1,25 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: show Home Window
+hnote over gui: Play Button clicked
+gui -> client: request play audio
+hnote over client: find corresponding audio
+hnote over client: make thread to play audio
+hnote over client: play audio
+
+==Play Audio Done==
+
+@enduml

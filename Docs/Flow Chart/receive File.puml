@@ -1,0 +1,32 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: show Home Window
+hnote over gui: File Button clicked
+hnote over gui: select file path to store file
+gui -> client: send file path
+gui -> client: request receive file
+client -> rpc: request send file
+rpc -> server: request send file
+server -> sql: request file data
+server <- sql: return file data
+rpc <- server: return file data
+client <- rpc: return file data
+hnote over client: parse filename and data
+hnote over client: convert Binary data to file
+hnote over client: store file at chosen file path
+==Receive File Done==
+
+@enduml

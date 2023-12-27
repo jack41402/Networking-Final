@@ -13,6 +13,9 @@ participant "RPC" as rpc order 2
 participant "Client" as client order 1
 participant "GUI" as gui order 0
 
+alt Login Button clicked
+    hnote over gui: switch to Login Window
+end
 hnote over gui: Register Button clicked
 gui -> client: send username, password,\nand confirm_password
 client -> rpc: request register verify

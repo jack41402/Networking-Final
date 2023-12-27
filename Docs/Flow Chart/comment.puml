@@ -15,6 +15,7 @@ participant "GUI" as gui order 0
 
 hnote over gui: show Home Window
 hnote over gui: show chatroom
+hnote over gui: Typing comment
 gui -> client: send comment
 client -> rpc: request send comment
 rpc -> server: request send comment

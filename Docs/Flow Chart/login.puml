@@ -12,14 +12,17 @@ participant "RPC" as rpc order 2
 participant "Client" as client order 1
 participant "GUI" as gui order 0
 
+alt Register Button clicked
+    hnote over gui: switch to Register Window
+end
 hnote over gui: Login Button clicked
 gui -> client: send username, password
 client -> rpc: request login verify
 rpc -> server: request user information
 server -> sql: request user information
 server <- sql: return user information
-rpc <- server: return user information
-hnote over rpc: verify user information
+hnote over server: verify user information
+rpc <- server: return verification
 client <- rpc: return verification
 alt login successfully
     gui <- client: verify successfully

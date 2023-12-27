@@ -1,0 +1,53 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow false
+skinparam style strictuml
+hide unlinked
+!pragma teoz true
+autonumber
+
+database "Database" as sql order 4
+participant "Server" as server order 3
+participant "RPC" as rpc order 2
+participant "Client" as client order 1
+participant "GUI" as gui order 0
+
+hnote over gui: show Home Window
+hnote over gui: If friend list clicked\nor send comment/file
+hnote over gui: show chatroom
+gui -> client: render message
+==Request Message==
+client -> rpc: request comment/file
+rpc -> server: request comment/file
+server -> sql: request comment/file
+server <- sql: return comment/file
+rpc <- server: return comment/file
+client <- rpc: return comment/file
+hnote over client: sort comment/file by time
+alt image/movie/audio file not exist on local
+    client -> rpc: request receive file
+    rpc -> server: request send file
+    server -> sql: request file data
+    server <- sql: return file data
+    rpc <- server: return file data
+    client <- rpc: return file data
+    hnote over client: store file data
+end
+==Pending Message==
+alt comment
+    gui <- client: pending comment
+else image
+    gui <- client: show image
+else gif/movie
+    gui <- client: show movie
+else audio
+    gui <- client: create Play Button
+    gui <- client: connect audio to button
+else any file
+    gui <- client: create File Button
+    gui <- client: connect file to button
+end
+==Render Message Done==
+
+@enduml

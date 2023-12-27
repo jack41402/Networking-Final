@@ -15,10 +15,14 @@ participant "GUI" as gui order 0
 
 hnote over gui: show Home Window
 hnote over gui: show chatroom
-gui -> client: send file
-client -> rpc: request send file
-rpc -> server: request send file
+hnote over gui: select file path to send file
+gui -> client: send file path
+gui -> client: request send file
+hnote over client: convert file to Binary data
+client -> rpc: request receive file
+rpc -> server: send Binary data
+hnote over server: parse filename and data
 server -> sql: insert file
-==Send Comment Done==
+==Send File Done==
 
 @enduml
