@@ -67,7 +67,7 @@ class Server:
             self.server.register_function(self.send_file, "send_file")
             self.server.register_function(self.find_friend, "find_friend")
             self.server.register_function(self.send_friend_request, "send_friend_request")
-            self.server.register_function(self.get_friend_request, "find_friend_request")
+            self.server.register_function(self.get_friend_request, "get_friend_request")
             self.server.register_function(self.register_directory, "register_directory")
             self.server.register_function(self.find_directory, "find_directory")
             self.server.register_function(self.delete_directory, "delete_directory")

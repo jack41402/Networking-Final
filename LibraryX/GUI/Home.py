@@ -215,7 +215,7 @@ class HomePanel(QWidget):
         try:
             if self.current_item is not None:
                 friend = self.current_item.data(Qt.ItemDataRole.UserRole)
-                author_id = self.api.username
+                author_id = self.api.user_id
                 reply_id = friend["user_id"]
                 if os.path.exists(audio_file_path):
                     self.api.send_file(audio_file_path, author_id, reply_id)
